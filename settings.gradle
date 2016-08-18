@@ -1,0 +1,1 @@
+include ':app', ':bluetooth-manager-lib'
