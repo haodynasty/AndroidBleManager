@@ -1,10 +1,8 @@
 package com.blakequ.bluetooth_manager_lib.device;
 
-
-import com.blakequ.blelibrary.device.BluetoothLeDevice;
-import com.blakequ.blelibrary.device.adrecord.AdRecord;
-import com.blakequ.blelibrary.device.beacon.ibeacon.IBeaconConstants;
-import com.blakequ.blelibrary.util.ByteUtils;
+import com.blakequ.bluetooth_manager_lib.device.adrecord.AdRecord;
+import com.blakequ.bluetooth_manager_lib.device.ibeacon.IBeaconConstants;
+import com.blakequ.bluetooth_manager_lib.util.ByteUtils;
 
 /**
  *
@@ -34,9 +32,9 @@ public final class BeaconUtils {
     }
 
     /**
-     * Ascertains whether a {@link com.blakequ.blelibrary.device.BluetoothLeDevice} is an iBeacon;
+     * Ascertains whether a {@link com.blakequ.bluetooth_manager_lib.device.BluetoothLeDevice} is an iBeacon;
      *
-     * @param device a {@link com.blakequ.blelibrary.device.BluetoothLeDevice} device.
+     * @param device a {@link com.blakequ.bluetooth_manager_lib.device.BluetoothLeDevice} device.
      * @return the {@link BeaconType}
      */
     public static BeaconType getBeaconType(final BluetoothLeDevice device) {

@@ -4,6 +4,9 @@ android BLE device scan and connect manager, this library
 # Functions
 - 低版本扫描兼容
 - 低功耗扫描，启动后台扫描时节约60%的电量
+- 单个蓝牙连接管理
+- 多蓝牙连接管理
+- 扫描高低版本兼容性封装
 
 # Permission Explanation
 You will need the following permissions to access the Bluetooth Hardware
@@ -17,5 +20,5 @@ You will need the following permissions to access the Bluetooth Hardware
 * Add parsers for common Ad Records.
 
 # Links
-[Bluetooth-LE-Library](https://github.com/alt236/Bluetooth-LE-Library---Android)
-[BluetoothCompat](https://github.com/joerogers/BluetoothCompat)
+- [Bluetooth-LE-Library](https://github.com/alt236/Bluetooth-LE-Library---Android)
+- [BluetoothCompat](https://github.com/joerogers/BluetoothCompat)
