@@ -2,6 +2,8 @@ package com.blakequ.bluetooth_manager_lib.scan;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.RequiresPermission;
 
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanCallbackCompat;
@@ -48,6 +50,7 @@ public final class BluetoothScanManager {
     private BackgroundPowerSaver mPowerSaver;
     private CycledLeScanner cycledLeScanner;
     private ScanCallbackCompat scanCallbackCompat;
+    private Handler mHandler = new Handler(Looper.getMainLooper());
 
     private BluetoothScanManager(Context context){
         this.mContext = context;
@@ -66,6 +69,21 @@ public final class BluetoothScanManager {
             INSTANCE = new BluetoothScanManager(context);
         }
         return INSTANCE;
+    }
+
+    /**
+     * Runs the specified action on the UI thread. If the current thread is the UI
+     * thread, then the action is executed immediately. If the current thread is
+     * not the UI thread, the action is posted to the event queue of the UI thread.
+     *
+     * @param action the action to run on the UI thread
+     */
+    public final void runOnUiThread(Runnable action) {
+        if (Thread.currentThread() != Looper.getMainLooper().getThread()) {
+            mHandler.post(action);
+        } else {
+            action.run();
+        }
     }
 
     /**
@@ -185,23 +203,38 @@ public final class BluetoothScanManager {
     private ScanCallbackCompat getScanCallback(){
         return new ScanCallbackCompat() {
             @Override
-            public void onBatchScanResults(List<ScanResultCompat> results) {
+            public void onBatchScanResults(final List<ScanResultCompat> results) {
                 if (scanCallbackCompat != null){
-                    scanCallbackCompat.onBatchScanResults(results);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            scanCallbackCompat.onBatchScanResults(results);
+                        }
+                    });
                 }
             }
 
             @Override
-            public void onScanFailed(int errorCode) {
+            public void onScanFailed(final int errorCode) {
                 if (scanCallbackCompat != null){
-                    scanCallbackCompat.onScanFailed(errorCode);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            scanCallbackCompat.onScanFailed(errorCode);
+                        }
+                    });
                 }
             }
 
             @Override
-            public void onScanResult(int callbackType, ScanResultCompat result) {
+            public void onScanResult(final int callbackType, final ScanResultCompat result) {
                 if (scanCallbackCompat != null){
-                    scanCallbackCompat.onScanResult(callbackType, result);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            scanCallbackCompat.onScanResult(callbackType, result);
+                        }
+                    });
                 }
             }
         };

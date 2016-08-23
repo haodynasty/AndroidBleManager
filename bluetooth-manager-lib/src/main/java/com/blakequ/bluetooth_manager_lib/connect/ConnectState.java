@@ -1,4 +1,4 @@
-package com.blakequ.bluetooth_manager_lib.connect.multiple;
+package com.blakequ.bluetooth_manager_lib.connect;
 
 /**
  * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
@@ -17,7 +17,9 @@ package com.blakequ.bluetooth_manager_lib.connect.multiple;
  * description:
  */
 public enum ConnectState {
+    /**disconnect or not connect*/
     NORMAL,
+    /**connected*/
     CONNECTED,
     CONNECTING
 }

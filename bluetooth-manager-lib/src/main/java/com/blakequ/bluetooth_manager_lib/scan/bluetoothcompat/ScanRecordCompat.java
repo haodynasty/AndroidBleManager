@@ -40,6 +40,7 @@ public class ScanRecordCompat {
 
     // The following data type values are assigned by Bluetooth SIG.
     // For more details refer to Bluetooth 4.1 specification, Volume 3, Part C, Section 18.
+    //https://devzone.nordicsemi.com/documentation/nrf51/4.2.0/html/group___b_l_e___g_a_p___a_d___t_y_p_e___d_e_f_i_n_i_t_i_o_n_s.html
     private static final int DATA_TYPE_FLAGS = 0x01;
     private static final int DATA_TYPE_SERVICE_UUIDS_16_BIT_PARTIAL = 0x02;
     private static final int DATA_TYPE_SERVICE_UUIDS_16_BIT_COMPLETE = 0x03;

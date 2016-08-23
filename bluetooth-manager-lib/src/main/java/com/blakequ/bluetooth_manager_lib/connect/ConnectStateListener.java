@@ -1,7 +1,5 @@
 package com.blakequ.bluetooth_manager_lib.connect;
 
-import android.bluetooth.BluetoothGattCallback;
-
 /**
  * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
  * <p/>
@@ -13,16 +11,17 @@ import android.bluetooth.BluetoothGattCallback;
  * limitations under the License.
  * <p/>
  * author  : quhao <blakequ@gmail.com> <br>
- * date     : 2016/7/15 9:59 <br>
+ * date     : 2016/8/23 16:51 <br>
  * last modify author : <br>
  * version : 1.0 <br>
  * description:
  */
-public abstract class BluetoothConnectCallback extends BluetoothGattCallback {
+public interface ConnectStateListener {
 
     /**
-     * 重新连接失败
-     * @param address
+     * invoke when bluetooth connect state changed
+     * @param address bluetooth device address
+     * @param state current state
      */
-    public abstract void onReconnectFail(String address);
+    void onConnectStateChanged(String address, ConnectState state);
 }

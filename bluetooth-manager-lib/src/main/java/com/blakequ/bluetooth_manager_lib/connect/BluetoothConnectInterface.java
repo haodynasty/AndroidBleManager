@@ -11,7 +11,6 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 
 import com.blakequ.bluetooth_manager_lib.util.LogUtils;
 
@@ -39,6 +38,7 @@ public abstract class BluetoothConnectInterface extends BluetoothGattCallback {
     protected static final String TAG = "BluetoothConnectInterface";
     protected Context context;
     private BluetoothOperatorQueue mOpratorQueue;
+    private Handler mHandler = new Handler(Looper.getMainLooper());
 
     public BluetoothConnectInterface(Context context){
         this.context = context;
@@ -84,76 +84,30 @@ public abstract class BluetoothConnectInterface extends BluetoothGattCallback {
      */
     protected abstract void onDiscoverServicesFail(BluetoothGatt gatt);
 
-    public abstract boolean close(String address);
-
-    public abstract void disconnect(String address);
-
-    protected abstract void reconnectDevice(String address);
+    /**
+     * invoke when success to discover service
+     * @param gatt
+     */
+    protected abstract void onDiscoverServicesSuccess(BluetoothGatt gatt);
 
     /**
-     * hand message in main thread, send msg by {@link #sendMessage(int, Object)}
-     * @param msg
+     * Runs the specified action on the UI thread. If the current thread is the UI
+     * thread, then the action is executed immediately. If the current thread is
+     * not the UI thread, the action is posted to the event queue of the UI thread.
+     *
+     * @param action the action to run on the UI thread
      */
-    protected abstract void handleMessageInMainThread(Message msg);
-
-    /**
-     * send msg to main looper, and you can invoke {@link #handleMessageInMainThread(Message)} to operator
-     * @param msgId
-     * @param obj
-     */
-    protected void sendMessage(int msgId, Object obj){
-        Message msg = new Message();
-        msg.what = msgId;
-        msg.obj = obj;
-        msg.arg1 = 0;
-        mHandler.sendMessage(msg);
-    }
-
-    /**
-     * send inner message
-     * @param msgId
-     * @param obj
-     */
-    private void sendInnerMessage(int msgId, Object obj){
-        Message msg = new Message();
-        msg.what = msgId;
-        msg.obj = obj;
-        msg.arg1 = 1;
-        mHandler.sendMessage(msg);
+    public final void runOnUiThread(Runnable action) {
+        if (Thread.currentThread() != Looper.getMainLooper().getThread()) {
+            mHandler.post(action);
+        } else {
+            action.run();
+        }
     }
 
     protected Handler getMainLooperHandler(){
         return mHandler;
     }
-
-    /**
-     * in main looper do operator about connect/disconnect/close/discover
-     */
-    private Handler mHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            if (msg.arg1 == 0){
-                handleMessageInMainThread(msg);
-                return true;
-            }
-            switch (msg.what){
-                case 1://discover service
-                    BluetoothGatt gatt = (BluetoothGatt) msg.obj;
-                    if (gatt != null && !gatt.discoverServices()){
-                        LogUtils.e(TAG, "onConnectionStateChange start service discovery fail!");
-                    }
-                    break;
-                case 2://subscribe service
-                    BluetoothGatt gatt2 = (BluetoothGatt) msg.obj;
-                    if (gatt2 != null){
-                        subscribe(gatt2.getDevice().getAddress());
-                        mOpratorQueue.start(gatt2);
-                    }
-                    break;
-            }
-            return true;
-        }
-    });
 
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
@@ -178,7 +132,7 @@ public abstract class BluetoothConnectInterface extends BluetoothGattCallback {
     }
 
     @Override
-    public void onConnectionStateChange(final BluetoothGatt gatt, int status, int newState) {
+    public void onConnectionStateChange(final BluetoothGatt gatt, int status, final int newState) {
         super.onConnectionStateChange(gatt, status, newState);
         //status=133是GATT_ERROR错误http://stackoverflow.com/questions/25330938/android-bluetoothgatt-status-133-register-callback
         //http://www.loverobots.cn/android-ble-connection-solution-bluetoothgatt-status-133.html
@@ -190,13 +144,30 @@ public abstract class BluetoothConnectInterface extends BluetoothGattCallback {
             if (newState == BluetoothProfile.STATE_CONNECTED) {//调用connect会调用
                 LogUtils.i(TAG, "Connected to GATT server");
                 // Attempts to discover services after successful connection.
-                sendInnerMessage(1, gatt);
-                onDeviceConnected(gatt);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onDeviceConnected(gatt);
+                        if (gatt != null && !gatt.discoverServices()) {
+                            LogUtils.e(TAG, "onConnectionStateChange start service discovery fail! Thread:" + Thread.currentThread());
+                        }
+                    }
+                });
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {//调用disconnect会调用，设备断开或蓝牙关闭会进入
-                onDeviceDisconnect(gatt, newState);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onDeviceDisconnect(gatt, newState);
+                    }
+                });
             }
         } else{ //调用connect和disconnect出错后会进入,设备断开或蓝牙关闭会进入
-            onDeviceDisconnect(gatt, newState);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    onDeviceDisconnect(gatt, newState);
+                }
+            });
         }
         if (getBluetoothGattCallback() != null) getBluetoothGattCallback().onConnectionStateChange(gatt, status, newState);
     }
@@ -237,14 +208,28 @@ public abstract class BluetoothConnectInterface extends BluetoothGattCallback {
     }
 
     @Override
-    public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+    public void onServicesDiscovered(final BluetoothGatt gatt, int status) {
         LogUtils.i(TAG, "onServicesDiscovered status=" + GattError.parseConnectionError(status));
         if (status == BluetoothGatt.GATT_SUCCESS) {
             //start subscribe data
-            sendInnerMessage(3, gatt);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    onDiscoverServicesSuccess(gatt);
+                    if (gatt != null){
+                        subscribe(gatt.getDevice().getAddress());
+                        mOpratorQueue.start(gatt);
+                    }
+                }
+            });
         }else {
-            onDiscoverServicesFail(gatt);
             LogUtils.e(TAG, "onServicesDiscovered fail!");
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    onDiscoverServicesFail(gatt);
+                }
+            });
         }
         if (getBluetoothGattCallback() != null) getBluetoothGattCallback().onServicesDiscovered(gatt, status);
     }
@@ -268,8 +253,7 @@ public abstract class BluetoothConnectInterface extends BluetoothGattCallback {
 
         //check subscribe list
         if (isEmpty(getSubscribeDataList())){
-            LogUtils.e(TAG, "subscribe operator list is null");
-            return;
+            throw new IllegalArgumentException("Subscribe BLE data is null, you must invoke addBluetoothSubscribeData to add data");
         }
 
         BluetoothGattService gattService = mBluetoothGatt.getService(UUID.fromString(getServiceUUID()));

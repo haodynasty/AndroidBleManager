@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 
 import com.blakequ.bluetooth_manager_lib.connect.BluetoothConnectManager;
+import com.blakequ.bluetooth_manager_lib.connect.multiple.MultiConnectManager;
 import com.blakequ.bluetooth_manager_lib.scan.BluetoothScanManager;
 import com.blakequ.bluetooth_manager_lib.util.LogUtils;
 
@@ -27,8 +28,12 @@ import com.blakequ.bluetooth_manager_lib.util.LogUtils;
  */
 @TargetApi(18)
 public final class BleManager {
+    public static long reconnectTime = 4000; //断开后等待尝试重新连接的时间
+    public static int reconnectedNum = 4; //断开后重新连接的次数
     private BluetoothConnectManager singleConnectManager;
     private BluetoothScanManager scanManager;
+    private MultiConnectManager multiConnectManager;
+    private static Object obj = new Object();
 
     private static BleManager INSTANCE = null;
     private BleManager(){
@@ -36,17 +41,42 @@ public final class BleManager {
 
     public static BleManager getInstance(){
         if (INSTANCE == null){
-            INSTANCE = new BleManager();
+            synchronized (obj){
+                if (INSTANCE == null){
+                    INSTANCE = new BleManager();
+                }
+            }
         }
         return INSTANCE;
     }
 
+    /**
+     * get connect manager, only connect one device
+     * @param context
+     * @return
+     * @see #getMultiConnectManager(Context)
+     */
     public BluetoothConnectManager getConnectManager(Context context){
         return BluetoothConnectManager.getInstance(context);
     }
 
+    /**
+     * get scan bluetooth manager
+     * @param context
+     * @return
+     */
     public BluetoothScanManager getScanManager(Context context){
         return BluetoothScanManager.getInstance(context);
+    }
+
+    /**
+     * get multi bluetooth device connect manager
+     * @param context
+     * @return
+     * @see #getConnectManager(Context)
+     */
+    public MultiConnectManager getMultiConnectManager(Context context){
+        return MultiConnectManager.getInstance(context);
     }
 
     /**

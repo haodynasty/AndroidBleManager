@@ -9,10 +9,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.os.Looper;
-import android.os.Message;
 import android.support.annotation.RequiresPermission;
-import android.support.v4.util.ArrayMap;
-import android.util.Log;
 
 import com.blakequ.bluetooth_manager_lib.util.BluetoothUtils;
 import com.blakequ.bluetooth_manager_lib.util.LogUtils;
@@ -36,36 +33,34 @@ import java.util.concurrent.ConcurrentHashMap;
  * date     : 2016/8/18 11:29 <br>
  * last modify author : <br>
  * version : 1.0 <br>
- * description: 用于当前蓝牙的连接管理，负责连接的建立断开，使用时需要设置回调{@link #setBluetoothGattCallback(BluetoothConnectCallback)},
+ * description: 用于当前蓝牙的连接管理，负责连接的建立断开，使用时需要设置回调{@link #setBluetoothGattCallback(BluetoothGattCallback)},
  * 连接{@link #connect(String)},断开连接{@link #disconnect(String)}, 关闭连接{@link #close(String)}.
- * 注意：<p>
- * 1.在进行蓝牙断开和连接调用的时候，需要在主线程执行，否则在三星手机会出现许多异常错误或无法连接的情况
- * 2.该连接管理只能连接一个设备，不支持同时连接多个设备
- * 3.可以自定义断开后重连次数和重连的间隔时间
+ * 注意：<br>
+ * 1.在进行蓝牙断开和连接调用的时候，需要在主线程执行，否则在三星手机会出现许多异常错误或无法连接的情况<br>
+ * 2.该连接管理只能连接一个设备，不支持同时连接多个设备<br>
+ * 3.可以自定义断开后重连次数和重连的间隔时间<br>
  * 4.必须设置设备的Service UUID {@link #setServiceUUID(String)}， 否则不能自动的进行通知和char和desc的读写操作（还需要{@link #addBluetoothSubscribeData(BluetoothSubScribeData)}）
  */
 @TargetApi(18)
 public final class BluetoothConnectManager extends BluetoothConnectInterface{
     private static final String TAG = "BluetoothConnectManager";
-    private static long reconnectTime = 4000; //断开后等待尝试重新连接的时间
-    private static int reconnectedNum = 2; //断开后重新连接的次数（不会立即重连--考虑到可能是切换连接设备）
 
     private static BluetoothConnectManager INSTANCE = null;
     private final BluetoothUtils mBluetoothUtils;
-    private BluetoothConnectCallback mBluetoothGattCallback;
+    private BluetoothGattCallback mBluetoothGattCallback;
     private BluetoothManager bluetoothManager;
     private final Map<String, BluetoothGatt> gattMap; //保存连接过的gatt
-    private final ArrayMap<String, Integer> deviceReconnectMap; //记录当前设备重新连接次数
     private final List<BluetoothSubScribeData> subscribeList;
     private static String serviceUUID;
-    private boolean isDisconnectByHand = false;
+    private ReconnectParamsBean reconnectParamsBean;
+    private ConnectStateListener connectStateListener;
+    private static Object obj = new Object();
 
     public BluetoothConnectManager(Context context) {
         super(context);
         subscribeList = new ArrayList<BluetoothSubScribeData>();
         mBluetoothUtils = BluetoothUtils.getInstance(context);
         bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
-        deviceReconnectMap = new ArrayMap<String, Integer>();
         gattMap = new ConcurrentHashMap<String, BluetoothGatt>(); //会有并发的断开和连接，故而必须使用并发ConcurrentHashMap才行，否则会有ConcurrentModificationException
     }
 
@@ -73,14 +68,22 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     @RequiresPermission("android.permission.BLUETOOTH_ADMIN")
     public static BluetoothConnectManager getInstance(Context context){
         if (INSTANCE == null){
-            INSTANCE = new BluetoothConnectManager(context);
+            synchronized (obj){
+                if (INSTANCE == null){
+                    INSTANCE = new BluetoothConnectManager(context);
+                }
+            }
         }
         return INSTANCE;
     }
 
 
-    public void setBluetoothGattCallback(BluetoothConnectCallback callback){
+    public void setBluetoothGattCallback(BluetoothGattCallback callback){
         this.mBluetoothGattCallback = callback;
+    }
+
+    public void setConnectStateListener(ConnectStateListener listener){
+        this.connectStateListener = listener;
     }
 
     /**
@@ -98,22 +101,6 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
      */
     public void setServiceUUID(String serviceUUID){
         this.serviceUUID = serviceUUID;
-    }
-
-    /**
-     * 连接断开后重新连接的次数，默认2次（不会立即重连--考虑到可能是切换连接设备）,等待时间{@link #reconnectTime}
-     * @param num
-     */
-    public void setReconnectNumber(int num){
-        this.reconnectedNum = num;
-    }
-
-    /**
-     * set reconnect space time by milliseconds
-     * @param reconnectTime
-     */
-    public void setReconnectTime(long reconnectTime){
-        this.reconnectTime = reconnectTime;
     }
 
     @Override
@@ -135,25 +122,50 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     }
 
     @Override
-    protected void onDeviceDisconnect(BluetoothGatt gatt, int errorState) {
-        //if disconnect by hand, so not run reconnect device
-        if (errorState == BluetoothProfile.STATE_DISCONNECTED && isDisconnectByHand){
-            isDisconnectByHand = false;
-            return;
+    protected void onDeviceDisconnect(final BluetoothGatt gatt, int errorState) {
+        //is bluetooth enable
+        //可以不关闭，以便重用，因为在连接connect的时候可以快速连接
+        if (!checkIsSamsung() || !mBluetoothUtils.isBluetoothIsEnable()){//三星手机断开后直接连接
+            LogUtils.e(TAG, "Disconnected from GATT server address:"+gatt.getDevice().getAddress());
+            close(gatt.getDevice().getAddress()); //防止出现status 133
+        }else {
+            updateConnectStateListener(gatt.getDevice().getAddress(), ConnectState.NORMAL);
         }
-        sendMessage(1, gatt);
+
+        //if disconnect by hand, so not run reconnect device
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                reconnectDevice(gatt.getDevice().getAddress()); //如果设备断开则指定时间后尝试重新连接,重新连接
+            }
+        });
     }
 
     @Override
     protected void onDeviceConnected(BluetoothGatt gatt) {
-        isDisconnectByHand = false;
-        deviceReconnectMap.clear();
-        deviceReconnectMap.put(gatt.getDevice().getAddress(), 1);
+        updateConnectStateListener(gatt.getDevice().getAddress(), ConnectState.CONNECTED);
+        reconnectParamsBean = null;
     }
 
     @Override
-    protected void onDiscoverServicesFail(BluetoothGatt gatt) {
-        isDisconnectByHand = false;
+    protected void onDiscoverServicesFail(final BluetoothGatt gatt) {
+        if (!checkIsSamsung() || !mBluetoothUtils.isBluetoothIsEnable()){//三星手机断开后直接连接
+            LogUtils.e(TAG, "Disconnected from GATT server address:"+gatt.getDevice().getAddress());
+            close(gatt.getDevice().getAddress()); //防止出现status 133
+        }else {
+            updateConnectStateListener(gatt.getDevice().getAddress(), ConnectState.NORMAL);
+        }
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                reconnectDevice(gatt.getDevice().getAddress());
+            }
+        });
+    }
+
+    @Override
+    protected void onDiscoverServicesSuccess(BluetoothGatt gatt) {
     }
 
     @Override
@@ -188,15 +200,17 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
      * {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
      * callback.
      */
-    public boolean connect(final String address) {
+    protected boolean connect(final String address) {
         BluetoothAdapter mAdapter = mBluetoothUtils.getBluetoothAdapter();
         if (mAdapter == null || address == null) {
-            Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
+            LogUtils.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
+            updateConnectStateListener(address, ConnectState.NORMAL);
             return false;
         }
 
         if (!mBluetoothUtils.isBluetoothIsEnable()){
-            Log.e(TAG, "bluetooth is not enable.");
+            LogUtils.e(TAG, "bluetooth is not enable.");
+            updateConnectStateListener(address, ConnectState.NORMAL);
             return false;
         }
 
@@ -207,9 +221,10 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
         // Previously connected device.  Try to reconnect.
         if (gattMap.containsKey(address)){
             BluetoothGatt mBluetoothGatt = gattMap.get(address);
-            Log.i(TAG, "Trying to use an existing gatt and reconnection device " + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
+            LogUtils.i(TAG, "Trying to use an existing gatt and reconnection device " + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
             if (mBluetoothGatt.connect()) {
                 closeOtherDevice(address);
+                updateConnectStateListener(address, ConnectState.CONNECTING);
                 return true;
             } else {
                 close(address);
@@ -223,16 +238,18 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
              parameter to false.*/
             BluetoothGatt mBluetoothGatt = device.connectGatt(context, false, this);
             if (mBluetoothGatt != null){
-                Log.d(TAG, "create a new connection address=" + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
+                LogUtils.d(TAG, "create a new connection address=" + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
                 gattMap.put(address, mBluetoothGatt);
                 closeOtherDevice(address);
+                updateConnectStateListener(address, ConnectState.CONNECTING);
                 return true;
             }else{
-                Log.e(TAG, "Get Gatt fail!, address=" + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
+                LogUtils.e(TAG, "Get Gatt fail!, address=" + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
             }
         }else{
-            Log.e(TAG, "Device not found, address=" + address);
+            LogUtils.e(TAG, "Device not found, address=" + address);
         }
+        updateConnectStateListener(address, ConnectState.NORMAL);
         return false;
     }
 
@@ -241,13 +258,13 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
      * 关闭蓝牙连接,会释放BluetoothGatt持有的所有资源
      * @param address
      */
-    @Override
-    public boolean close(String address) {
+    protected boolean close(String address) {
         if (!isEmpty(address) && gattMap.containsKey(address)){
             LogUtils.w(TAG, "close gatt server " + address);
             BluetoothGatt mBluetoothGatt = gattMap.get(address);
             mBluetoothGatt.close();
             gattMap.remove(address);
+            updateConnectStateListener(address, ConnectState.NORMAL);
             return true;
         }
         return false;
@@ -256,7 +273,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     /**
      * 关闭所有蓝牙设备
      */
-    public void closeAll(){
+    protected void closeAll(){
         for (String address:gattMap.keySet()) {
             close(address);
         }
@@ -267,13 +284,14 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
      * 如果不及时释放资源，可能出现133错误，http://www.loverobots.cn/android-ble-connection-solution-bluetoothgatt-status-133.html
      * @param address
      */
-    @Override
-    public void disconnect(String address){
+    protected void disconnect(String address){
         if (!isEmpty(address) && gattMap.containsKey(address)){
-            isDisconnectByHand = true;
+            reconnectParamsBean = new ReconnectParamsBean(address);
+            reconnectParamsBean.setNumber(1000);
             LogUtils.w(TAG, "disconnect gatt server " + address);
             BluetoothGatt mBluetoothGatt = gattMap.get(address);
             mBluetoothGatt.disconnect();
+            updateConnectStateListener(address, ConnectState.NORMAL);
         }
     }
 
@@ -281,48 +299,62 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
      * 重新连接断开的设备
      * @param address
      */
-    @Override
-    protected void reconnectDevice(final String address){
-        int times = 1;
-        isDisconnectByHand = false;
-        if (deviceReconnectMap.containsKey(address)){
-            times = deviceReconnectMap.get(address);
-        }
-        deviceReconnectMap.put(address, times + 1);
-        if (times <= reconnectedNum){
-            getMainLooperHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    //重新连接要求没有已经连接的设备，没有正在连接的，蓝牙可用
-                    if (mBluetoothUtils.isBluetoothIsEnable()) {
-                        boolean isReconncted = false;
-                        if (gattMap.containsKey(address)) {
-                            if (gattMap.size() == 1) isReconncted = true;
-                        } else if (gattMap.size() == 0) {
-                            isReconncted = true;
-                        }
-
-                        //如果已经连接上，也不重连
-                        if (!isEmpty(getConnectedDevice())) {
-                            isReconncted = false;
-                        }
-
-                        if (isReconncted && getConnectedDevice().size() == 0) {
-                            LogUtils.d(TAG, "reconnecting! will reconnect " + address);
-                            //重连必须在主线程运行
-                            sendMessage(0, address);
-                        } else {
-                            LogUtils.w(TAG, "reconnecting refuse! " + address + " flag:" + isReconncted);
-                        }
-                    }
+    private void reconnectDevice(final String address){
+        if (reconnectParamsBean != null){
+            if (!reconnectParamsBean.getAddress().equals(address)){
+                reconnectParamsBean.updateAddress(address);
+            }else {
+                if (reconnectParamsBean.getNumber() == 1){//same device
+                    reconnectParamsBean.updateAddress(address);
+                }else if(reconnectParamsBean.getNumber() == 1000){//disconnect by hand
+                    reconnectParamsBean.setNumber(1);
+                    return;
                 }
-            }, reconnectTime * times);
-        } else {
-            //如果尝试reconnectedTimes次没有连接上
-            LogUtils.d(TAG, "reconnecting fail! " + address);
-            deviceReconnectMap.clear();
-            if (mBluetoothGattCallback != null) mBluetoothGattCallback.onReconnectFail(address);
+            }
+        }else{
+            reconnectParamsBean = new ReconnectParamsBean(address);
         }
+
+        getMainLooperHandler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //重新连接要求没有已经连接的设备，没有正在连接的，蓝牙可用
+                if (mBluetoothUtils.isBluetoothIsEnable()) {
+                    boolean isReconncted = false;
+                    if (gattMap.containsKey(address)) {
+                        if (gattMap.size() == 1) isReconncted = true;
+                    } else if (gattMap.size() == 0) {
+                        isReconncted = true;
+                    }
+
+                    //如果已经连接上，也不重连
+                    if (!isEmpty(getConnectedDevice())) {
+                        isReconncted = false;
+                        reconnectParamsBean = null;
+                    }
+
+                    if (isReconncted && getConnectedDevice().size() == 0) {
+                        LogUtils.d(TAG, "reconnecting! will reconnect " + address);
+                        if (reconnectParamsBean != null){
+                            reconnectParamsBean.addNumber();
+                            //重连必须在主线程运行
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    connect(address);
+                                }
+                            });
+                        }else {
+                            LogUtils.w(TAG, "Fail to reconnect, ReconnectParams is null");
+                        }
+                    } else {
+                        LogUtils.w(TAG, "Fail to reconnect, refuse! " + address + " flag:" + isReconncted);
+                    }
+                }else{
+                    LogUtils.w(TAG, "Fail to reconnect, the bluetooth is disable!");
+                }
+            }
+        }, reconnectParamsBean.getNextReconnectTime());
     }
 
     /**
@@ -349,21 +381,9 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
         }
     }
 
-    @Override
-    protected void handleMessageInMainThread(Message msg) {
-        switch (msg.what){
-            case 0:
-                connect((String) msg.obj);
-                break;
-            case 1://disconnect and reconnect device
-                BluetoothGatt gatt = (BluetoothGatt) msg.obj;
-                //可以不关闭，以便重用，因为在连接connect的时候可以快速连接
-                if (!checkIsSamsung() || !BluetoothUtils.getInstance(context).isBluetoothIsEnable()){//三星手机断开后直接连接
-                    LogUtils.e(TAG, "Disconnected from GATT server address:"+msg.obj);
-                    close(gatt.getDevice().getAddress()); //防止出现status 133
-                }
-                reconnectDevice(gatt.getDevice().getAddress()); //如果设备断开则指定时间后尝试重新连接,重新连接2次，不行则关闭
-                break;
+    private void updateConnectStateListener(String address, ConnectState state){
+        if (connectStateListener != null){
+            connectStateListener.onConnectStateChanged(address, state);
         }
     }
 }

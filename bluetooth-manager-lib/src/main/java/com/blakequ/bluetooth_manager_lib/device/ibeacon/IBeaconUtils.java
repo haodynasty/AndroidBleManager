@@ -1,6 +1,7 @@
 package com.blakequ.bluetooth_manager_lib.device.ibeacon;
 
-import uk.co.alt236.bluetoothlelib.util.ByteUtils;
+
+import com.blakequ.bluetooth_manager_lib.util.ByteUtils;
 
 final class IBeaconUtils {
     private static final double DISTANCE_THRESHOLD_WTF = 0.0;
