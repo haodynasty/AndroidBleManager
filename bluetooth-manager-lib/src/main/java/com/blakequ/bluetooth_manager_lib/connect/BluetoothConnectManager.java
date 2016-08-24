@@ -9,7 +9,6 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.os.Looper;
-import android.support.annotation.RequiresPermission;
 
 import com.blakequ.bluetooth_manager_lib.util.BluetoothUtils;
 import com.blakequ.bluetooth_manager_lib.util.LogUtils;
@@ -65,7 +64,6 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     }
 
 
-    @RequiresPermission("android.permission.BLUETOOTH_ADMIN")
     public static BluetoothConnectManager getInstance(Context context){
         if (INSTANCE == null){
             synchronized (obj){

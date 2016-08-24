@@ -62,10 +62,10 @@ public class ScanResultCompat implements Parcelable {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     ScanResultCompat(ScanResult result) {
-        mDevice = new BluetoothLeDevice(result.getDevice(), result.getRssi(), result.getScanRecord().getBytes(), result.getTimestampNanos());
+        mDevice = new BluetoothLeDevice(result.getDevice(), result.getRssi(), result.getScanRecord().getBytes(), System.currentTimeMillis());//result.getTimestampNanos()
         mScanRecord = new ScanRecordCompat(result.getScanRecord());
         mRssi = result.getRssi();
-        mTimestampNanos = result.getTimestampNanos();
+        mTimestampNanos = System.currentTimeMillis();//result.getTimestampNanos();
     }
 
     private ScanResultCompat(Parcel in) {

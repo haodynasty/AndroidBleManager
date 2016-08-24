@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.RequiresPermission;
 
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanCallbackCompat;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanFilterCompat;
@@ -50,11 +49,13 @@ public final class BluetoothScanManager {
     private BackgroundPowerSaver mPowerSaver;
     private CycledLeScanner cycledLeScanner;
     private ScanCallbackCompat scanCallbackCompat;
-    private Handler mHandler = new Handler(Looper.getMainLooper());
+    private final Handler mHandler;
+    private static Object obj = new Object();
 
     private BluetoothScanManager(Context context){
         this.mContext = context;
         mPowerSaver = new BackgroundPowerSaver(context);
+        mHandler = new Handler(Looper.getMainLooper());
         cycledLeScanner = new CycledLeScanner(context,
                 BackgroundPowerSaver.DEFAULT_BACKGROUND_SCAN_PERIOD,
                 BackgroundPowerSaver.DEFAULT_BACKGROUND_BETWEEN_SCAN_PERIOD,
@@ -62,11 +63,14 @@ public final class BluetoothScanManager {
                 getScanCallback());
     }
 
-    @RequiresPermission("android.permission.BLUETOOTH_ADMIN")
     public static BluetoothScanManager getInstance(Context context){
         if (INSTANCE == null){
-            LogUtils.d(TAG, "BluetoothScanManager instance creation");
-            INSTANCE = new BluetoothScanManager(context);
+            synchronized (obj){
+                if (INSTANCE == null){
+                    LogUtils.d(TAG, "BluetoothScanManager instance creation");
+                    INSTANCE = new BluetoothScanManager(context);
+                }
+            }
         }
         return INSTANCE;
     }
@@ -116,6 +120,10 @@ public final class BluetoothScanManager {
      */
     public boolean isScanning(){
       return cycledLeScanner.isScanning();
+    }
+
+    public boolean isPauseScanning(){
+        return cycledLeScanner.isPauseScan();
     }
 
     /**

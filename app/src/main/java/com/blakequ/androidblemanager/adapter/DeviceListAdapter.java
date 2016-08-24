@@ -1,0 +1,117 @@
+package com.blakequ.androidblemanager.adapter;
+
+import android.content.Context;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.blakequ.androidblemanager.R;
+import com.blakequ.androidblemanager.utils.Constants;
+import com.blakequ.bluetooth_manager_lib.device.BeaconType;
+import com.blakequ.bluetooth_manager_lib.device.BeaconUtils;
+import com.blakequ.bluetooth_manager_lib.device.BluetoothLeDevice;
+import com.blakequ.bluetooth_manager_lib.device.ibeacon.IBeaconDevice;
+
+/**
+ * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
+ * <p/>
+ * Licensed under the blakequ.com License, Version 1.0 (the "License");
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * <p/>
+ * author  : quhao <blakequ@gmail.com> <br>
+ * date     : 2016/8/24 20:44 <br>
+ * last modify author : <br>
+ * version : 1.0 <br>
+ * description:
+ */
+public class DeviceListAdapter extends BaseArrayListAdapter<BluetoothLeDevice>{
+
+    public DeviceListAdapter(Context context) {
+        super(context);
+    }
+
+    @Override
+    public View getView(int position, View view, ViewGroup parent) {
+        final ViewHolder viewHolder;
+        // General ListView optimization code.
+        if (view == null) {
+            view = mInflater.inflate(R.layout.list_item_device, null);
+            viewHolder = new ViewHolder();
+            viewHolder.deviceAddress = (TextView) view.findViewById(R.id.device_address);
+            viewHolder.deviceName = (TextView) view.findViewById(R.id.device_name);
+            viewHolder.deviceRssi = (TextView) view.findViewById(R.id.device_rssi);
+            viewHolder.deviceIcon = (ImageView) view.findViewById(R.id.device_icon);
+            viewHolder.deviceLastUpdated = (TextView) view.findViewById(R.id.device_last_update);
+            viewHolder.ibeaconMajor = (TextView) view.findViewById(R.id.ibeacon_major);
+            viewHolder.ibeaconMinor = (TextView) view.findViewById(R.id.ibeacon_minor);
+            viewHolder.ibeaconDistance = (TextView) view.findViewById(R.id.ibeacon_distance);
+            viewHolder.ibeaconUUID = (TextView) view.findViewById(R.id.ibeacon_uuid);
+            viewHolder.ibeaconTxPower = (TextView) view.findViewById(R.id.ibeacon_tx_power);
+            viewHolder.ibeaconSection = view.findViewById(R.id.ibeacon_section);
+            viewHolder.ibeaconDistanceDescriptor = (TextView) view.findViewById(R.id.ibeacon_distance_descriptor);
+            view.setTag(viewHolder);
+        } else {
+            viewHolder = (ViewHolder) view.getTag();
+        }
+
+        final BluetoothLeDevice device = (BluetoothLeDevice) getItem(position);
+        final String deviceName = device.getName();
+        final double rssi = device.getRssi();
+
+        if (deviceName != null && deviceName.length() > 0) {
+            viewHolder.deviceName.setText(deviceName);
+        } else {
+            viewHolder.deviceName.setText(R.string.unknown_device);
+        }
+
+        if (BeaconUtils.getBeaconType(device) == BeaconType.IBEACON) {
+            final IBeaconDevice iBeacon = new IBeaconDevice(device);
+            final String accuracy = Constants.DOUBLE_TWO_DIGIT_ACCURACY.format(iBeacon.getAccuracy());
+
+            viewHolder.deviceIcon.setImageResource(R.mipmap.ic_device_ibeacon);
+            viewHolder.ibeaconSection.setVisibility(View.VISIBLE);
+            viewHolder.ibeaconMajor.setText(String.valueOf(iBeacon.getMajor()));
+            viewHolder.ibeaconMinor.setText(String.valueOf(iBeacon.getMinor()));
+            viewHolder.ibeaconTxPower.setText(String.valueOf(iBeacon.getCalibratedTxPower()));
+            viewHolder.ibeaconUUID.setText(iBeacon.getUUID());
+            viewHolder.ibeaconDistance.setText(
+                    mContext.getString(R.string.formatter_meters, accuracy));
+            viewHolder.ibeaconDistanceDescriptor.setText(iBeacon.getDistanceDescriptor().toString());
+        } else {
+            viewHolder.deviceIcon.setImageResource(R.mipmap.ic_bluetooth);
+            viewHolder.ibeaconSection.setVisibility(View.GONE);
+        }
+
+        final String rssiString =
+                mContext.getString(R.string.formatter_db, String.valueOf(rssi));
+        final String runningAverageRssiString =
+                mContext.getString(R.string.formatter_db, String.valueOf(device.getRunningAverageRssi()));
+
+        viewHolder.deviceLastUpdated.setText(
+                android.text.format.DateFormat.format(
+                        Constants.TIME_FORMAT, new java.util.Date(device.getTimestamp())));
+        viewHolder.deviceAddress.setText(device.getAddress());
+        viewHolder.deviceRssi.setText(rssiString + " / " + runningAverageRssiString);
+        return view;
+    }
+
+    static class ViewHolder {
+        TextView deviceName;
+        TextView deviceAddress;
+        TextView deviceRssi;
+        TextView ibeaconUUID;
+        TextView ibeaconMajor;
+        TextView ibeaconMinor;
+        TextView ibeaconTxPower;
+        TextView ibeaconDistance;
+        TextView ibeaconDistanceDescriptor;
+        TextView deviceLastUpdated;
+        View ibeaconSection;
+        ImageView deviceIcon;
+    }
+}

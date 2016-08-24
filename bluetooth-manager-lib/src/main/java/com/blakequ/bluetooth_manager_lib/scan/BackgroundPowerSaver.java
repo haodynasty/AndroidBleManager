@@ -18,8 +18,8 @@ import com.blakequ.bluetooth_manager_lib.util.LogUtils;
 @TargetApi(18)
 public class BackgroundPowerSaver implements Application.ActivityLifecycleCallbacks {
     private static final String TAG = "BackgroundPowerSaver";
-    private BluetoothScanManager scanManager;
     private int activeActivityCount = 0;
+    private Context mContext;
     /**
      * The default duration in milliseconds of the Bluetooth scan cycle
      */
@@ -66,7 +66,7 @@ public class BackgroundPowerSaver implements Application.ActivityLifecycleCallba
             return;
         }
         ((Application)context.getApplicationContext()).registerActivityLifecycleCallbacks(this);
-        scanManager = BluetoothScanManager.getInstance(context);
+        this.mContext = context;
     }
 
     /**
@@ -115,7 +115,7 @@ public class BackgroundPowerSaver implements Application.ActivityLifecycleCallba
     }
 
     public long getScanPeriod() {
-        if (scanManager.isBackgroundMode()) {
+        if (BluetoothScanManager.getInstance(mContext).isBackgroundMode()) {
             return backgroundScanPeriod;
         } else {
             return foregroundScanPeriod;
@@ -123,7 +123,7 @@ public class BackgroundPowerSaver implements Application.ActivityLifecycleCallba
     }
 
     public long getBetweenScanPeriod() {
-        if (scanManager.isBackgroundMode()) {
+        if (BluetoothScanManager.getInstance(mContext).isBackgroundMode()) {
             return backgroundBetweenScanPeriod;
         } else {
             return foregroundBetweenScanPeriod;
@@ -145,7 +145,7 @@ public class BackgroundPowerSaver implements Application.ActivityLifecycleCallba
             LogUtils.d(TAG, "reset active activity count on resume.  It was " + activeActivityCount);
             activeActivityCount = 1;
         }
-        scanManager.setBackgroundMode(false);
+        BluetoothScanManager.getInstance(mContext).setBackgroundMode(false);
         LogUtils.d(TAG, "activity resumed: "+activity+" active activities: "+activeActivityCount);
     }
 
@@ -155,7 +155,7 @@ public class BackgroundPowerSaver implements Application.ActivityLifecycleCallba
         LogUtils.d(TAG, "activity paused: "+activity+" active activities: "+activeActivityCount);
         if (activeActivityCount < 1) {
             LogUtils.d(TAG, "setting background mode");
-            scanManager.setBackgroundMode(true);
+            BluetoothScanManager.getInstance(mContext).setBackgroundMode(true);
         }
     }
 

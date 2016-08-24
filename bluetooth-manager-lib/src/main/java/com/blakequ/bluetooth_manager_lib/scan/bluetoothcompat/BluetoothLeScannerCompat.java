@@ -204,7 +204,7 @@ public class BluetoothLeScannerCompat {
             ScanResultCompat result = new ScanResultCompat(
                     device,
                     ScanRecordCompat.parseFromBytes(scanRecord),
-                    rssi, System.nanoTime());
+                    rssi, System.currentTimeMillis());
 
             // No filters so return any result
             if (filters == null) {

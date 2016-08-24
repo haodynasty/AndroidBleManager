@@ -5,8 +5,10 @@ import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.support.v4.content.ContextCompat;
 
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.BluetoothLeScannerCompat;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanCallbackCompat;
@@ -99,6 +101,8 @@ public class CycledLeScanner {
         this.isPauseScan = isPauseScan;
         if (!isPauseScan){
             scanLeDevice(true);
+        }else {
+            scanLeDevice(false);
         }
     }
 
@@ -163,6 +167,10 @@ public class CycledLeScanner {
         return mScanning;
     }
 
+    public boolean isPauseScan() {
+        return isPauseScan;
+    }
+
     /**
      * start or stop scan
      * @param enable true-start scan right now，false-stop scan
@@ -186,9 +194,16 @@ public class CycledLeScanner {
             if (!isPauseScan || isOnceScan){
                 try {
                     if (android.os.Build.VERSION.SDK_INT < 23 || checkLocationPermission()) {
-                        BluetoothLeScannerCompat.startScan(mAdapter, scanFilterCompats, getScanSettings(), scanCallbackCompat);
+                        if (android.os.Build.VERSION.SDK_INT >= 23 && !isGpsProviderEnabled(mContext)){
+                            LogUtils.e(TAG, "If SDK>=23, current SDK=" + android.os.Build.VERSION.SDK_INT+", Location info not open and can not scan any device!");
+                            scanCallbackCompat.onScanFailed(ScanCallbackCompat.SCAN_FAILED_LOCATION_CLOSE);
+                        }else {
+                            LogUtils.i(TAG, "ScanDevice: Start scan...");
+                            BluetoothLeScannerCompat.startScan(mAdapter, scanFilterCompats, getScanSettings(), scanCallbackCompat);
+                        }
                     }else{
-                        LogUtils.e(TAG, "If SDK>=23, Please check the location permission is enabled(ACCESS_COARSE_LOCATION and ACCESS_FINE_LOCATION)");
+                        scanCallbackCompat.onScanFailed(ScanCallbackCompat.SCAN_FAILED_LOCATION_PERMISSION_FORBID);
+                        LogUtils.e(TAG, "If SDK>=23, current SDK="+android.os.Build.VERSION.SDK_INT+", Please check the location permission is enabled(ACCESS_COARSE_LOCATION and ACCESS_FINE_LOCATION)");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -301,6 +316,15 @@ public class CycledLeScanner {
         return scanSettings;
     }
 
+    /**
+     * is open GPS
+     * @param context
+     * @return
+     */
+    public static boolean isGpsProviderEnabled(Context context){
+        LocationManager service = (LocationManager) context.getSystemService(context.LOCATION_SERVICE);
+        return service.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
 
     /**
      * when API>=23, if the location disabled, can not scan any devices
@@ -311,6 +335,6 @@ public class CycledLeScanner {
     }
 
     private boolean checkPermission(final String permission) {
-        return mContext.checkPermission(permission, android.os.Process.myPid(), android.os.Process.myUid()) == PackageManager.PERMISSION_GRANTED;
+        return ContextCompat.checkSelfPermission(mContext, permission) == PackageManager.PERMISSION_GRANTED;
     }
 }

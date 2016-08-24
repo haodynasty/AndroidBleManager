@@ -46,6 +46,17 @@ public abstract class ScanCallbackCompat {
     public static final int SCAN_FAILED_FEATURE_UNSUPPORTED = 4;
 
     /**
+     * new error code, Fails to scan as location permission is forbid()
+     */
+    public static final int SCAN_FAILED_LOCATION_PERMISSION_FORBID = 5;
+
+    /**
+     * use SDK>=23, The location is not open(if sdk>=23, will not scan any device)
+     * http://stackoverflow.com/questions/33043582/bluetooth-low-energy-startscan-on-android-6-0-does-not-find-devices/33045489#33045489
+     */
+    public static final int SCAN_FAILED_LOCATION_CLOSE = 6;
+
+    /**
      * Callback when a BLE advertisement has been found.
      *
      * @param callbackType Determines how this callback was triggered. Currently could only be
