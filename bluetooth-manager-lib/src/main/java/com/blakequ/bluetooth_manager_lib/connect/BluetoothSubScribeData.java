@@ -1,5 +1,7 @@
 package com.blakequ.bluetooth_manager_lib.connect;
 
+import com.blakequ.bluetooth_manager_lib.device.resolvers.GattAttributeResolver;
+
 import java.util.UUID;
 
 /**
@@ -25,12 +27,10 @@ public class BluetoothSubScribeData {
     private UUID descriptorUUID;
     private byte[] descriptorValue;
     //the notification uuid for Characteristic
-    private UUID characteristicNotificationUUID;
     private Type operatorType;
 
     private BluetoothSubScribeData(UUID characteristicUUID, byte[] characteristicValue, UUID descriptorUUID
-        ,byte[] descriptorValue, UUID characteristicNotificationUUID, Type operatorType){
-        this.characteristicNotificationUUID = characteristicNotificationUUID;
+        ,byte[] descriptorValue, Type operatorType){
         this.characteristicUUID = characteristicUUID;
         this.characteristicValue = characteristicValue;
         this.descriptorUUID = descriptorUUID;
@@ -43,14 +43,6 @@ public class BluetoothSubScribeData {
         this.operatorType = operatorType;
     }
 
-    private BluetoothSubScribeData(UUID characteristicUUID, byte[] characteristicValue, Type operatorType){
-        this.characteristicUUID = characteristicUUID;
-        this.operatorType = operatorType;
-    }
-
-    public UUID getCharacteristicNotificationUUID() {
-        return characteristicNotificationUUID;
-    }
 
     public UUID getCharacteristicUUID() {
         return characteristicUUID;
@@ -78,93 +70,104 @@ public class BluetoothSubScribeData {
         private UUID descriptorUUID;
         private byte[] descriptorValue;
         //the notification uuid for Characteristic
-        private UUID characteristicNotificationUUID;
         private Type operatorType;
 
-        public Builder setCharacteristicUUID(UUID characteristicUUID){
-            if (characteristicUUID == null){
-                throw new IllegalArgumentException("invalid null characteristic UUID");
-            }
+        /**
+         * read Characteristic
+         * @param characteristicUUID
+         * @return
+         */
+        public Builder setCharacteristicRead(UUID characteristicUUID){
+            this.operatorType = Type.CHAR_READ;
             this.characteristicUUID = characteristicUUID;
             return this;
         }
 
-        public Builder setCharacteristicValue(byte[] characteristicValue){
-            if (characteristicValue == null){
-                throw new IllegalArgumentException("invalid null characteristic value");
-            }
+        /**
+         * write Characteristic
+         * @param characteristicUUID
+         * @param characteristicValue
+         * @return
+         */
+        public Builder setCharacteristicWrite(UUID characteristicUUID, byte[] characteristicValue){
+            this.operatorType = Type.CHAR_WIRTE;
+            this.characteristicUUID = characteristicUUID;
             this.characteristicValue = characteristicValue;
             return this;
         }
 
-        public Builder setDescriptorUUID(UUID descriptorUUID){
-            if (descriptorUUID == null){
-                throw new IllegalArgumentException("invalid null descriptor UUID");
-            }
+        /**
+         * read Descriptor
+         * @param characteristicUUID
+         * @param descriptorUUID
+         * @return
+         */
+        public Builder setDescriptorRead(UUID characteristicUUID, UUID descriptorUUID){
+            this.operatorType = Type.DESC_READ;
+            this.characteristicUUID = characteristicUUID;
             this.descriptorUUID = descriptorUUID;
             return this;
         }
 
-        public Builder setDescriptorValue(byte[] descriptorValue){
-            if (descriptorValue == null){
-                throw new IllegalArgumentException("invalid null descriptor value");
-            }
+        /**
+         * write Descriptor
+         * @param characteristicUUID
+         * @param descriptorUUID
+         * @param descriptorValue
+         * @return
+         */
+        public Builder setDescriptorWrite(UUID characteristicUUID, UUID descriptorUUID, byte[] descriptorValue){
+            this.operatorType = Type.DESC_WRITE;
+            this.characteristicUUID = characteristicUUID;
+            this.descriptorUUID = descriptorUUID;
             this.descriptorValue = descriptorValue;
             return this;
         }
 
-        public Builder setCharacteristicNotificationUUID(UUID characteristicNotificationUUID){
-            if (characteristicNotificationUUID == null){
-                throw new IllegalArgumentException("invalid null characteristic notification UUID");
-            }
-            this.characteristicNotificationUUID = characteristicNotificationUUID;
-            return this;
-        }
-
-        public Builder setOperatorType(Type type){
-            this.operatorType = type;
+        /**
+         * get notify
+         * @param characteristicNotificationUUID notify characteristic uuid
+         * @return
+         */
+        public Builder setCharacteristicNotify(UUID characteristicNotificationUUID){
+            this.operatorType = Type.NOTIFY;
+            this.characteristicUUID = characteristicNotificationUUID;
+            this.descriptorUUID = UUID.fromString(GattAttributeResolver.CLIENT_CHARACTERISTIC_CONFIG);
             return this;
         }
 
         public BluetoothSubScribeData build(){
-            //check params
-            if (operatorType == null){
-                throw new IllegalArgumentException("invalid Type, and type can not be null");
-            }
             if (characteristicUUID == null){
                 throw new IllegalArgumentException("invalid characteristic, and characteristic can not be null");
             }
             BluetoothSubScribeData data = null;
             switch (operatorType){
                 case CHAR_READ:
-                    data = new BluetoothSubScribeData(characteristicUUID, Type.CHAR_READ);
+                    data = new BluetoothSubScribeData(characteristicUUID, operatorType);
                     break;
                 case CHAR_WIRTE:
                     if (characteristicValue == null){
                         throw new IllegalArgumentException("invalid null characteristic value");
                     }
-                    data = new BluetoothSubScribeData(characteristicUUID, characteristicValue, Type.CHAR_READ);
+                    data = new BluetoothSubScribeData(characteristicUUID, characteristicValue, null,null, operatorType);
                     break;
                 case DESC_READ:
                     if (descriptorUUID == null){
                         throw new IllegalArgumentException("invalid null descriptor UUID");
                     }
-                    data = new BluetoothSubScribeData(characteristicUUID, characteristicValue, descriptorUUID, descriptorValue, characteristicNotificationUUID, operatorType);
+                    data = new BluetoothSubScribeData(characteristicUUID, null, descriptorUUID, null, operatorType);
                     break;
                 case DESC_WRITE:
                     if (descriptorUUID == null || descriptorValue == null){
                         throw new IllegalArgumentException("invalid null descriptor UUID or value");
                     }
-                    data = new BluetoothSubScribeData(characteristicUUID, characteristicValue, descriptorUUID, descriptorValue, characteristicNotificationUUID, operatorType);
+                    data = new BluetoothSubScribeData(characteristicUUID, null, descriptorUUID, descriptorValue, operatorType);
                     break;
                 case NOTIFY:
                     if (descriptorUUID == null){
                         throw new IllegalArgumentException("invalid null descriptor UUID");
                     }
-                    if (characteristicNotificationUUID == null){
-                        throw new IllegalArgumentException("invalid null characteristic notification UUID");
-                    }
-                    data = new BluetoothSubScribeData(characteristicUUID, characteristicValue, descriptorUUID, descriptorValue, characteristicNotificationUUID, operatorType);
+                    data = new BluetoothSubScribeData(characteristicUUID, null, descriptorUUID, null, operatorType);
                     break;
             }
             return data;

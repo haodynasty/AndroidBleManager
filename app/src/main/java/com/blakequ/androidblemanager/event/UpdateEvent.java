@@ -19,9 +19,30 @@ package com.blakequ.androidblemanager.event;
 public class UpdateEvent {
 
     private Type type;
+    private Object obj;
+    private String msg;
 
     public UpdateEvent(Type type) {
         this.type = type;
+    }
+
+    public UpdateEvent(Type type, Object obj) {
+        this.obj = obj;
+        this.type = type;
+    }
+
+    public UpdateEvent(Type type, Object obj, String msg) {
+        this.obj = obj;
+        this.type = type;
+        this.msg = msg;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 
     public Type getType() {
@@ -32,7 +53,16 @@ public class UpdateEvent {
         this.type = type;
     }
 
+    public Object getObj() {
+        return obj;
+    }
+
+    public void setObj(Object obj) {
+        this.obj = obj;
+    }
+
     public static enum Type{
-        SCAN_UPDATE
+        SCAN_UPDATE,
+        BLE_DATA
     }
 }

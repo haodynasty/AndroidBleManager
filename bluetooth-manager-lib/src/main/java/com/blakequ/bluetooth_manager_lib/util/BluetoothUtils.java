@@ -2,6 +2,7 @@ package com.blakequ.bluetooth_manager_lib.util;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
@@ -101,6 +102,36 @@ public final class BluetoothUtils {
     public static void openBlueToothSetting(Activity mActivity){
         final Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         mActivity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+    }
+
+    public static boolean isCharacteristicRead(int property){
+        if ((property & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isCharacteristicWrite(int property){
+        if ((property & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) > 0
+                || (property & BluetoothGattCharacteristic.PROPERTY_WRITE) > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isCharacteristicNotify(int property){
+        if ((property & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0
+                || (property & BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isCharacteristicBroadcast(int property){
+        if ((property & BluetoothGattCharacteristic.PROPERTY_BROADCAST) > 0){
+            return true;
+        }
+        return false;
     }
 
 }

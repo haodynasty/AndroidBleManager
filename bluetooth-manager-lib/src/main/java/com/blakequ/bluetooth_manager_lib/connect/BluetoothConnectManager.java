@@ -52,7 +52,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     private final List<BluetoothSubScribeData> subscribeList;
     private static String serviceUUID;
     private ReconnectParamsBean reconnectParamsBean;
-    private ConnectStateListener connectStateListener;
+    private List<ConnectStateListener> connectStateListeners;
     private static Object obj = new Object();
 
     public BluetoothConnectManager(Context context) {
@@ -61,6 +61,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
         mBluetoothUtils = BluetoothUtils.getInstance(context);
         bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         gattMap = new ConcurrentHashMap<String, BluetoothGatt>(); //会有并发的断开和连接，故而必须使用并发ConcurrentHashMap才行，否则会有ConcurrentModificationException
+        connectStateListeners = new ArrayList<>();
     }
 
 
@@ -80,16 +81,31 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
         this.mBluetoothGattCallback = callback;
     }
 
-    public void setConnectStateListener(ConnectStateListener listener){
-        this.connectStateListener = listener;
+    public void addConnectStateListener(ConnectStateListener listener){
+        synchronized(connectStateListeners){
+            connectStateListeners.add(listener);
+        }
+    }
+
+    public void removeConnectStateListener(ConnectStateListener listener){
+        synchronized(connectStateListeners){
+            connectStateListeners.remove(listener);
+        }
     }
 
     /**
-     * add subscribe data while read or write characteristic(or descriptor) after discover service
+     * add subscribe data while auto read or write characteristic(or descriptor) after discover service, you can clean subscribe list by {@link #cleanSubscribeData()}
      * @param data
      */
     public void addBluetoothSubscribeData(BluetoothSubScribeData data){
         subscribeList.add(data);
+    }
+
+    /**
+     * clean subscribe list
+     */
+    public void cleanSubscribeData(){
+        subscribeList.clear();
     }
 
     /**
@@ -198,7 +214,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
      * {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
      * callback.
      */
-    protected boolean connect(final String address) {
+    public boolean connect(final String address) {
         BluetoothAdapter mAdapter = mBluetoothUtils.getBluetoothAdapter();
         if (mAdapter == null || address == null) {
             LogUtils.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
@@ -210,10 +226,6 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
             LogUtils.e(TAG, "bluetooth is not enable.");
             updateConnectStateListener(address, ConnectState.NORMAL);
             return false;
-        }
-
-        if (isEmpty(serviceUUID)){
-            throw new IllegalArgumentException("Service uuid is null, you must invoke setServiceUUID(String) method to set service uuid");
         }
 
         // Previously connected device.  Try to reconnect.
@@ -234,7 +246,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
         if (device != null){
              /*if We want to directly connect to the device, we can setting the autoConnect
              parameter to false.*/
-            BluetoothGatt mBluetoothGatt = device.connectGatt(context, false, this);
+            BluetoothGatt mBluetoothGatt = device.connectGatt(context, false, gattCallback);
             if (mBluetoothGatt != null){
                 LogUtils.d(TAG, "create a new connection address=" + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
                 gattMap.put(address, mBluetoothGatt);
@@ -256,7 +268,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
      * 关闭蓝牙连接,会释放BluetoothGatt持有的所有资源
      * @param address
      */
-    protected boolean close(String address) {
+    public boolean close(String address) {
         if (!isEmpty(address) && gattMap.containsKey(address)){
             LogUtils.w(TAG, "close gatt server " + address);
             BluetoothGatt mBluetoothGatt = gattMap.get(address);
@@ -271,7 +283,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     /**
      * 关闭所有蓝牙设备
      */
-    protected void closeAll(){
+    public void closeAll(){
         for (String address:gattMap.keySet()) {
             close(address);
         }
@@ -282,7 +294,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
      * 如果不及时释放资源，可能出现133错误，http://www.loverobots.cn/android-ble-connection-solution-bluetoothgatt-status-133.html
      * @param address
      */
-    protected void disconnect(String address){
+    public void disconnect(String address){
         if (!isEmpty(address) && gattMap.containsKey(address)){
             reconnectParamsBean = new ReconnectParamsBean(address);
             reconnectParamsBean.setNumber(1000);
@@ -380,8 +392,10 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     }
 
     private void updateConnectStateListener(String address, ConnectState state){
-        if (connectStateListener != null){
-            connectStateListener.onConnectStateChanged(address, state);
+        synchronized (connectStateListeners){
+            for (ConnectStateListener listener:connectStateListeners){
+                listener.onConnectStateChanged(address, state);
+            }
         }
     }
 }

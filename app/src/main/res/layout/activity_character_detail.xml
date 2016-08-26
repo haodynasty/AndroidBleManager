@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <include layout="@layout/include_headbar"/>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:orientation="vertical" android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp">
+            <TextView
+                android:id="@+id/char_device_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Unknow Device Name"
+                android:padding="4dp"/>
+            <TextView
+                android:id="@+id/char_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Unkonw Char Name"
+                android:textSize="17sp"
+                android:textColor="#000000"
+                android:padding="4dp"/>
+            <TextView
+                android:id="@+id/char_device_uuid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="uuid:"
+                android:padding="4dp"/>
+            <TextView
+                android:visibility="gone"
+                android:id="@+id/char_device_state"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Disconnected, Data is stale."
+                android:textColor="#FF0000"
+                android:padding="4dp"/>
+
+            <LinearLayout
+                android:id="@+id/write_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="WRITTEN VALUES"
+                    android:textColor="#000000"
+                    android:textSize="12sp"
+                    android:layout_marginTop="8dp"
+                    android:paddingLeft="4dp"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FAF0E6"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/char_write"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Write new value"
+                        android:textColor="@color/bg_tab_text"
+                        android:padding="4dp"/>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:background="#8470FF"/>
+                    <TextView
+                        android:id="@+id/char_write_result"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Write result"
+                        android:textSize="15sp"
+                        android:padding="4dp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+
+
+            <LinearLayout
+                android:id="@+id/read_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/char_read_notify"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="READ VALUES"
+                    android:textColor="#000000"
+                    android:textSize="12sp"
+                    android:layout_marginTop="12dp"
+                    android:paddingLeft="4dp"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FAF0E6"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/char_read"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Read again"
+                        android:textColor="@color/bg_tab_text"
+                        android:padding="4dp"/>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:background="#8470FF"/>
+                    <TextView
+                        android:id="@+id/char_read_value"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Read values"
+                        android:textSize="15sp"
+                        android:padding="4dp"/>
+                    <LinearLayout
+                        android:visibility="gone"
+                        android:id="@+id/notify_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+                        <TextView
+                            android:id="@+id/char_notify"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Listen for notifications"
+                            android:textColor="@color/bg_tab_text"
+                            android:padding="4dp"/>
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.5dp"
+                            android:background="#8470FF"/>
+                        <com.blakequ.androidblemanager.widget.ListViewForScrollView
+                            android:visibility="gone"
+                            android:id="@+id/char_notify_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+            </LinearLayout>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="DESCRIPTORS"
+                android:textColor="#000000"
+                android:textSize="12sp"
+                android:layout_marginTop="12dp"
+                android:paddingLeft="4dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FAF0E6"
+                android:orientation="vertical">
+                <com.blakequ.androidblemanager.widget.ListViewForScrollView
+                    android:visibility="gone"
+                    android:id="@+id/char_descriptor_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="PROPERTIES"
+                android:textColor="#000000"
+                android:textSize="12sp"
+                android:layout_marginTop="12dp"
+                android:paddingLeft="4dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FAF0E6"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/char_properties"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="READ"
+                    android:textSize="15sp"
+                    android:padding="4dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

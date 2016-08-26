@@ -422,7 +422,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         if (device != null){
              /*if We want to directly connect to the device, we can setting the autoConnect
              parameter to false.*/
-            BluetoothGatt mBluetoothGatt = device.connectGatt(context, false, this);
+            BluetoothGatt mBluetoothGatt = device.connectGatt(context, false, gattCallback);
             if (mBluetoothGatt != null){
                 LogUtils.i(TAG, "create a new connection address=" + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
                 gattMap.put(address, mBluetoothGatt);

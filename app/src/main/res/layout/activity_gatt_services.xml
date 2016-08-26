@@ -64,7 +64,13 @@
             android:layout_below="@id/deviceInformation"
             android:background="@android:color/holo_blue_dark"/>
 
+        <View
+            android:id="@+id/gattInformationView"
+            android:layout_width="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_height="1dp"/>
         <GridLayout
+            android:visibility="gone"
             android:id="@+id/gattInformation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -117,7 +123,7 @@
             android:id="@+id/lowerSepparator"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_above="@id/gattInformation"
+            android:layout_above="@id/gattInformationView"
             android:background="@android:color/holo_blue_dark"/>
 
         <ExpandableListView

@@ -28,6 +28,7 @@
         <activity android:name=".ui.FilterActivity"/>
         <activity android:name=".ui.scan.DeviceDetailsActivity"/>
         <activity android:name=".ui.scan.DeviceControlActivity"/>
+        <activity android:name=".ui.scan.CharacteristicDetailActivity"/>
     </application>
 
 </manifest>
