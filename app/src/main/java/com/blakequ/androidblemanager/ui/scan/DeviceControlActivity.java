@@ -104,6 +104,28 @@ public class DeviceControlActivity extends ToolbarActivity {
         }
     };
 
+    private ConnectStateListener stateListener = new ConnectStateListener() {
+        @Override
+        public void onConnectStateChanged(String address, ConnectState state) {
+            switch (state) {
+                case CONNECTED:
+                    connectState = 1;
+                    mConnected = true;
+                    updateConnectionState(R.string.connected);
+                    break;
+                case CONNECTING:
+                    mConnected = false;
+                    break;
+                case NORMAL:
+                    connectState = 2;
+                    mConnected = false;
+                    updateConnectionState(R.string.disconnected);
+                    break;
+            }
+            invalidateOptionsMenu();
+        }
+    };
+
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,27 +140,7 @@ public class DeviceControlActivity extends ToolbarActivity {
         mGattServicesList.setOnChildClickListener(servicesListClickListner);
 
         connectManager = BluetoothConnectManager.getInstance(this);
-        connectManager.addConnectStateListener(new ConnectStateListener() {
-            @Override
-            public void onConnectStateChanged(String address, ConnectState state) {
-                switch (state) {
-                    case CONNECTED:
-                        connectState = 1;
-                        mConnected = true;
-                        updateConnectionState(R.string.connected);
-                        break;
-                    case CONNECTING:
-                        mConnected = false;
-                        break;
-                    case NORMAL:
-                        connectState = 2;
-                        mConnected = false;
-                        updateConnectionState(R.string.disconnected);
-                        break;
-                }
-                invalidateOptionsMenu();
-            }
-        });
+        connectManager.addConnectStateListener(stateListener);
         connectManager.setBluetoothGattCallback(new BluetoothGattCallback() {
 
             @Override
@@ -225,6 +227,7 @@ public class DeviceControlActivity extends ToolbarActivity {
     protected void onDestroy() {
         super.onDestroy();
         connectManager.closeAll();
+        connectManager.removeConnectStateListener(stateListener);
     }
 
     @Override

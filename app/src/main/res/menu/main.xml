@@ -20,7 +20,17 @@
         app:showAsAction="ifRoom|withText"/>
     <item
         android:id="@+id/menu_filter"
-        android:orderInCategory="100"
+        android:orderInCategory="102"
         android:title="@string/action_filter"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_disconnect"
+        android:orderInCategory="103"
+        android:title="@string/disconnected"
+        app:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/menu_connect"
+        android:orderInCategory="103"
+        android:title="@string/connected"
+        app:showAsAction="ifRoom|withText"/>
 </menu>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#ffd9d3c5" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10dp">
+        <TextView
+            android:id="@+id/main_ble_cancle"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textColor="@color/bg_tab_text"
+            android:text="Cancel"
+            android:textSize="16sp"
+            android:gravity="left"/>
+        <TextView
+            android:id="@+id/main_ble_confirm"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textColor="@color/bg_tab_text"
+            android:text="Confirm"
+            android:textSize="16sp"
+            android:gravity="right"/>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#ffd9d3c5" />
+
+    <ListView
+        android:id="@+id/common_listview"
+        style="@style/SimpleListView"
+        android:paddingLeft="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:choiceMode="singleChoice"
+        android:footerDividersEnabled="true"
+        android:drawSelectorOnTop="false"
+        android:divider="@android:color/transparent"
+        android:listSelector="@drawable/bg_selector_ldrawer">
+    </ListView>
+</LinearLayout>

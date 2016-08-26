@@ -14,6 +14,7 @@ import com.blakequ.bluetooth_manager_lib.util.BluetoothUtils;
 import com.blakequ.bluetooth_manager_lib.util.LogUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +39,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * 1.在进行蓝牙断开和连接调用的时候，需要在主线程执行，否则在三星手机会出现许多异常错误或无法连接的情况<br>
  * 2.该连接管理只能连接一个设备，不支持同时连接多个设备<br>
  * 3.可以自定义断开后重连次数和重连的间隔时间<br>
- * 4.必须设置设备的Service UUID {@link #setServiceUUID(String)}， 否则不能自动的进行通知和char和desc的读写操作（还需要{@link #addBluetoothSubscribeData(BluetoothSubScribeData)}）
+ * 4.如果要订阅服务数据（read,write,notify）Service UUID {@link #setServiceUUID(String)}， 否则不能自动的进行通知和char和desc的读写操作（还需要{@link #addBluetoothSubscribeData(BluetoothSubScribeData)}）<br>
+ * 5.单独订阅数据，需要调用{@link #cleanSubscribeData()}清除订阅历史列表, {@link #addBluetoothSubscribeData(BluetoothSubScribeData)}添加参数, {@link #startSubscribe(BluetoothGatt)}启动订阅，会自动回调{@link #setBluetoothGattCallback(BluetoothGattCallback)}订阅结果
  */
 @TargetApi(18)
 public final class BluetoothConnectManager extends BluetoothConnectInterface{
@@ -53,6 +55,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     private static String serviceUUID;
     private ReconnectParamsBean reconnectParamsBean;
     private List<ConnectStateListener> connectStateListeners;
+    private ConnectState currentState = ConnectState.NORMAL;
     private static Object obj = new Object();
 
     public BluetoothConnectManager(Context context) {
@@ -77,16 +80,33 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     }
 
 
+    /**
+     * add callback of gatt connect, notice:<br>
+     * 1. can not do any task which need a lot of time<br>
+     * 2. you should update UI in the main thread, in callback method use {@link #runOnUiThread(Runnable)}
+     * @param callback
+     * @see #runOnUiThread(Runnable)
+     */
     public void setBluetoothGattCallback(BluetoothGattCallback callback){
         this.mBluetoothGattCallback = callback;
     }
 
+    /**
+     * add listener of connect state
+     * @param listener
+     * @see #removeConnectStateListener(ConnectStateListener)
+     */
     public void addConnectStateListener(ConnectStateListener listener){
         synchronized(connectStateListeners){
             connectStateListeners.add(listener);
         }
     }
 
+    /**
+     * remove listener
+     * @param listener
+     * @see #addBluetoothSubscribeData(BluetoothSubScribeData)
+     */
     public void removeConnectStateListener(ConnectStateListener listener){
         synchronized(connectStateListeners){
             connectStateListeners.remove(listener);
@@ -96,6 +116,9 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     /**
      * add subscribe data while auto read or write characteristic(or descriptor) after discover service, you can clean subscribe list by {@link #cleanSubscribeData()}
      * @param data
+     * @see #cleanSubscribeData()
+     * @see #startSubscribe(BluetoothGatt)
+     * @see #setServiceUUID(String)
      */
     public void addBluetoothSubscribeData(BluetoothSubScribeData data){
         subscribeList.add(data);
@@ -103,6 +126,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
 
     /**
      * clean subscribe list
+     * @see #addBluetoothSubscribeData(BluetoothSubScribeData)
      */
     public void cleanSubscribeData(){
         subscribeList.clear();
@@ -188,10 +212,10 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     }
 
     /**
-     * has device is connecting
+     * has device is connected or connecting
      * @return
      */
-    public boolean isConnectingDevice(){
+    public boolean isConnectDevice(){
         if (gattMap.size() == 0) return false;
         return true;
     }
@@ -201,9 +225,15 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
      * @return
      */
     public List<BluetoothDevice> getConnectedDevice(){
-        return bluetoothManager.getConnectedDevices(BluetoothProfile.GATT);
+        if (isConnectDevice()){
+            return bluetoothManager.getConnectedDevices(BluetoothProfile.GATT);
+        }
+        return Collections.EMPTY_LIST;
     }
 
+    public ConnectState getCurrentState(){
+        return currentState;
+    }
 
     /**
      * Connects to the GATT server hosted on the Bluetooth LE device. 为保证只有一个连接，当连接创建或初始化成功则会强制关闭其他连接
@@ -265,7 +295,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
 
 
     /**
-     * 关闭蓝牙连接,会释放BluetoothGatt持有的所有资源
+     * close bluetooth, release resource
      * @param address
      */
     public boolean close(String address) {
@@ -281,7 +311,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     }
 
     /**
-     * 关闭所有蓝牙设备
+     * close all bluetooth connect,  release all resource
      */
     public void closeAll(){
         for (String address:gattMap.keySet()) {
@@ -393,8 +423,9 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
 
     private void updateConnectStateListener(String address, ConnectState state){
         synchronized (connectStateListeners){
+            currentState = state;
             for (ConnectStateListener listener:connectStateListeners){
-                listener.onConnectStateChanged(address, state);
+                if (listener != null) listener.onConnectStateChanged(address, state);
             }
         }
     }

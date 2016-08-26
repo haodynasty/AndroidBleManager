@@ -21,6 +21,7 @@ public class UpdateEvent {
     private Type type;
     private Object obj;
     private String msg;
+    private int arg1;
 
     public UpdateEvent(Type type) {
         this.type = type;
@@ -35,6 +36,19 @@ public class UpdateEvent {
         this.obj = obj;
         this.type = type;
         this.msg = msg;
+    }
+
+    public UpdateEvent(Type type, int arg1) {
+        this.type = type;
+        this.arg1 = arg1;
+    }
+
+    public int getArg1() {
+        return arg1;
+    }
+
+    public void setArg1(int arg1) {
+        this.arg1 = arg1;
     }
 
     public String getMsg() {
@@ -63,6 +77,7 @@ public class UpdateEvent {
 
     public static enum Type{
         SCAN_UPDATE,
-        BLE_DATA
+        BLE_DATA,
+        POP_SHOW
     }
 }

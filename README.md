@@ -7,6 +7,9 @@ android BLE device scan and connect manager, this library
 - 单个蓝牙连接管理
 - 多蓝牙连接管理
 - 扫描高低版本兼容性封装
+- 扫描的步骤
+- 单设备连接的步骤
+- 多设备连接的步骤
 
 # Permission Explanation
 You will need the following permissions to access the Bluetooth Hardware

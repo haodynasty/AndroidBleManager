@@ -45,7 +45,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     private Map<String, BluetoothGatt> gattMap;//notice:ArrayMap is not support concurrent, so can not use ArrayMap
     private Queue<String> deviceQueue;
     private final BluetoothUtils mBluetoothUtils;
-    private ConnectStateListener connectStateListener;
+    private List<ConnectStateListener> connectStateListeners;
 
     public ConnectRequestQueue(Context context, int maxLen){
         super(context);
@@ -55,10 +55,19 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         reconnectMap = new ConcurrentHashMap<String, ReconnectParamsBean>();
         deviceQueue = new ConcurrentLinkedQueue<>();
         mBluetoothUtils = BluetoothUtils.getInstance(context);
+        connectStateListeners = new ArrayList<>();
     }
 
-    public void setConnectStateListener(ConnectStateListener listener){
-        this.connectStateListener = listener;
+    public void addConnectStateListener(ConnectStateListener listener){
+        synchronized (connectStateListeners){
+            connectStateListeners.add(listener);
+        }
+    }
+
+    public void removeConnectStateListener(ConnectStateListener listener){
+        synchronized (connectStateListeners){
+            connectStateListeners.remove(listener);
+        }
     }
 
     @Override
@@ -97,7 +106,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     /**
      * start connect device one by one
      */
-    protected void startConnect(){
+    public void startConnect(){
         if (deviceQueue.size() > 0 && mBluetoothUtils.isBluetoothIsEnable()){
             triggerConnectNextDevice();
         }else {
@@ -146,7 +155,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     /**
      * release resource
      */
-    protected void release(){
+    public void release(){
         macMap.clear();
         closeAll();
         gattMap.clear();
@@ -158,7 +167,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
      * get the length of queue
      * <p>Notice:this len maybe is not equal of maxLen(connect device num<=maxLen), is dynamic length by sensor physical truth</>
      */
-    protected int getQueueSize(){
+    public int getQueueSize(){
         return macMap.size();
     }
 
@@ -166,7 +175,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
      * add device to connect queue, if the number out of range will discard.
      * @param macAddress
      */
-    protected void addDeviceToQueue(String macAddress){
+    public void addDeviceToQueue(String macAddress){
         if (!macMap.containsKey(macAddress)){
             if (macMap.size() >= queueLen){
                 String address = deviceQueue.poll();
@@ -180,7 +189,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         }
     }
 
-    protected void addDeviceToQueue(String[] devices){
+    public void addDeviceToQueue(String[] devices){
         if (devices != null && devices.length > 0){
             for (int i=0; i<devices.length; i++){
                 addDeviceToQueue(devices[i]);
@@ -192,7 +201,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
      * remove device from queue, disconnected device if in connection state
      * @param macAddress
      */
-    protected void removeDeviceFromQueue(String macAddress){
+    public void removeDeviceFromQueue(String macAddress){
         if (isEmpty(macAddress)) return;
         macMap.remove(macAddress);
         reconnectMap.remove(macAddress);
@@ -201,7 +210,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         }
     }
 
-    protected List<String> getAllDevice(){
+    public List<String> getAllDevice(){
         if (macMap.size() <= 0) return Collections.EMPTY_LIST;
         List<String> list = new ArrayList<>();
         for (String key:macMap.keySet()){
@@ -214,7 +223,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
      * get all connected device
      * @return
      */
-    protected List<String> getAllConnectedDevice(){
+    public List<String> getAllConnectedDevice(){
         if (macMap.size() <= 0) return Collections.EMPTY_LIST;
         List<String> list = new ArrayList<>();
         for (String key:macMap.keySet()){
@@ -230,7 +239,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
      * @param address
      * @return
      */
-    protected boolean isExistConnectedDevice(String address){
+    public boolean isExistConnectedDevice(String address){
         if (macMap.containsKey(address)){
             return macMap.get(address) == ConnectState.CONNECTED;
         }
@@ -242,11 +251,11 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
      * @param address
      * @return
      */
-    protected ConnectState getDeviceState(String address){
+    public ConnectState getDeviceState(String address){
         return macMap.get(address);
     }
 
-    protected List<String> getAllConnectingDevice(){
+    public List<String> getAllConnectingDevice(){
         if (macMap.size() <= 0) return Collections.EMPTY_LIST;
         List<String> list = new ArrayList<>();
         for (String key:macMap.keySet()){
@@ -261,8 +270,8 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
      * has device is not connected
      * @return
      */
-    protected boolean isDisconnectDevice(){
-        for (ConnectState value:macMap.values()){
+    public boolean isDisconnectDevice(){
+        for (ConnectState value:macMap.values()) {
             if (value == ConnectState.NORMAL){
                 return true;
             }
@@ -270,9 +279,22 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         return false;
     }
 
-    protected boolean isConnectingDevice(){
+    /**
+     * is have device is connecting
+     * @return
+     */
+    public boolean isConnectingDevice(){
         for (ConnectState value:macMap.values()){
             if (value == ConnectState.CONNECTING){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isConnectedDevice(){
+        for (ConnectState value:macMap.values()){
+            if (value == ConnectState.CONNECTED){
                 return true;
             }
         }
@@ -387,7 +409,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     }
 
 
-    protected boolean connect(final String address) {
+    public boolean connect(final String address) {
         BluetoothAdapter mAdapter = mBluetoothUtils.getBluetoothAdapter();
         if (mAdapter == null || address == null) {
             LogUtils.e(TAG, "BluetoothAdapter not initialized or unspecified address "+address);
@@ -402,7 +424,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         }
 
         if (isEmpty(getServiceUUID())){
-            throw new IllegalArgumentException("Service uuid is null, you must invoke setServiceUUID(String) method to set service uuid");
+            LogUtils.w(TAG, "Service uuid is null");
         }
 
         // Previously connected device.  Try to reconnect.
@@ -441,7 +463,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
      * 关闭蓝牙连接,会释放BluetoothGatt持有的所有资源
      * @param address
      */
-    protected boolean close(String address) {
+    public boolean close(String address) {
         if (!isEmpty(address) && gattMap.containsKey(address)){
             LogUtils.w("ConnectRequestQueue", "close gatt server " + address);
             BluetoothGatt mBluetoothGatt = gattMap.get(address);
@@ -456,7 +478,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     /**
      * 关闭所有蓝牙设备
      */
-    protected void closeAll(){
+    public void closeAll(){
         for (String address:gattMap.keySet()) {
             close(address);
         }
@@ -467,7 +489,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
      * 如果不及时释放资源，可能出现133错误，http://www.loverobots.cn/android-ble-connection-solution-bluetoothgatt-status-133.html
      * @param address
      */
-    protected void disconnect(String address){
+    public void disconnect(String address){
         if (!isEmpty(address) && gattMap.containsKey(address)){
             LogUtils.w("ConnectRequestQueue", "disconnect gatt server " + address);
             BluetoothGatt mBluetoothGatt = gattMap.get(address);
@@ -477,13 +499,19 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     }
 
     private void updateConnectStateListener(String address, ConnectState state){
-        if (connectStateListener != null){
-            connectStateListener.onConnectStateChanged(address, state);
+        synchronized (connectStateListeners){
+            for (ConnectStateListener listener:connectStateListeners){
+                if (listener != null) listener.onConnectStateChanged(address, state);
+            }
         }
     }
 
-    protected void setQueueLen(int queueLen){
+    protected void setMaxLen(int queueLen){
         this.queueLen = queueLen;
+    }
+
+    public int getMaxLen(){
+        return this.queueLen;
     }
 
     public boolean isEmpty(String str) {

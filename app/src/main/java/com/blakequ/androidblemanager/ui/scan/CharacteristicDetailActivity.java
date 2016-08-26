@@ -150,8 +150,11 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
             }
 
             //start subscribe auto
+            //1.set service uuid
             connectManager.setServiceUUID(serverUUid.toString());
+            //2.clean history descriptor data
             connectManager.cleanSubscribeData();
+            //3.add subscribe params
             if (BluetoothUtils.isCharacteristicRead(characteristic.getProperties())){
                 connectManager.addBluetoothSubscribeData(
                         new BluetoothSubScribeData.Builder().setCharacteristicRead(characteristic.getUuid()).build());
@@ -161,6 +164,7 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
                         new BluetoothSubScribeData.Builder().setCharacteristicNotify(characteristic.getUuid()).build()
                 );
             }
+            //start descriptor
             connectManager.startSubscribe(gatt);
         }else{
             setOperatorEnable(false);
@@ -184,9 +188,9 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.char_read:
-                connectManager.cleanSubscribeData();
 //                gatt.readCharacteristic(characteristic);
                 //or
+                connectManager.cleanSubscribeData();
                 connectManager.addBluetoothSubscribeData(
                         new BluetoothSubScribeData.Builder().setCharacteristicRead(characteristic.getUuid()).build());
                 connectManager.startSubscribe(gatt);
@@ -195,9 +199,9 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
                 displayDataDialog();
                 break;
             case R.id.char_notify:
-                connectManager.cleanSubscribeData();
 //                setCharacteristicNotification(characteristic, true);
                 //or
+                connectManager.cleanSubscribeData();
                 connectManager.addBluetoothSubscribeData(
                         new BluetoothSubScribeData.Builder().setCharacteristicNotify(characteristic.getUuid()).build()
                 );

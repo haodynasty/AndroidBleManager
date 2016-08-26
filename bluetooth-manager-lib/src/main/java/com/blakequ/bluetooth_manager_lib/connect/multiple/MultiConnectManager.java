@@ -122,6 +122,6 @@ public final class MultiConnectManager extends ConnectRequestQueue {
     }
 
     public void setMaxConnectDeviceNum(int number){
-        setQueueLen(number);
+        setMaxLen(number);
     }
 }

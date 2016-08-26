@@ -30,12 +30,17 @@ import com.blakequ.androidblemanager.utils.Constants;
 import com.blakequ.androidblemanager.utils.PreferencesUtils;
 import com.blakequ.androidblemanager.widget.ScrollViewPager;
 import com.blakequ.bluetooth_manager_lib.BleManager;
+import com.blakequ.bluetooth_manager_lib.connect.BluetoothConnectManager;
+import com.blakequ.bluetooth_manager_lib.connect.ConnectState;
+import com.blakequ.bluetooth_manager_lib.connect.multiple.MultiConnectManager;
 import com.blakequ.bluetooth_manager_lib.scan.BluetoothScanManager;
 import com.blakequ.bluetooth_manager_lib.scan.ScanOverListener;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanCallbackCompat;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanResultCompat;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,11 +64,12 @@ public class MainActivity extends ToolbarActivity
     private String filterName;
     private int filterRssi;
     private boolean filterSwitch;
+    private int currentTab = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        EventBus.getDefault().register(this);
+        EventBus.getDefault().register(this);
         ButterKnife.bind(this);
         BleManager.getInstance().setLogDebugMode(BuildConfig.DEBUG);
 
@@ -72,7 +78,7 @@ public class MainActivity extends ToolbarActivity
             public void onClick(View view) {
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
-//                startScan();
+            EventBus.getDefault().post(new UpdateEvent(UpdateEvent.Type.POP_SHOW, currentTab));
             }
         });
         fab.setVisibility(View.GONE);
@@ -102,7 +108,7 @@ public class MainActivity extends ToolbarActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        EventBus.getDefault().unregister(this);
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -211,21 +217,58 @@ public class MainActivity extends ToolbarActivity
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventUpdate(UpdateEvent event){
+
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        if (!scanManager.isScanning()) {
+        if (currentTab == 0){
+            menu.findItem(R.id.menu_connect).setVisible(false);
+            menu.findItem(R.id.menu_disconnect).setVisible(false);
+            if (!scanManager.isScanning()) {
+                menu.findItem(R.id.menu_stop).setVisible(false);
+                menu.findItem(R.id.menu_scan).setVisible(true);
+                menu.findItem(R.id.menu_filter).setVisible(true);
+                menu.findItem(R.id.menu_refresh).setActionView(null);
+            } else {
+                menu.findItem(R.id.menu_stop).setVisible(true);
+                menu.findItem(R.id.menu_scan).setVisible(false);
+                menu.findItem(R.id.menu_filter).setVisible(false);
+                menu.findItem(R.id.menu_refresh).setActionView(R.layout.actionbar_progress_indeterminate);
+            }
+        }else if(currentTab == 1){
             menu.findItem(R.id.menu_stop).setVisible(false);
-            menu.findItem(R.id.menu_scan).setVisible(true);
-            menu.findItem(R.id.menu_filter).setVisible(true);
-            menu.findItem(R.id.menu_refresh).setActionView(null);
-        } else {
-            menu.findItem(R.id.menu_stop).setVisible(true);
             menu.findItem(R.id.menu_scan).setVisible(false);
             menu.findItem(R.id.menu_filter).setVisible(false);
-            menu.findItem(R.id.menu_refresh).setActionView(R.layout.actionbar_progress_indeterminate);
+            menu.findItem(R.id.menu_refresh).setActionView(null);
+            menu.findItem(R.id.menu_connect).setVisible(false);
+            menu.findItem(R.id.menu_disconnect).setVisible(false);
+            int size = BluetoothConnectManager.getInstance(this).getConnectedDevice().size();
+            if (size > 0){
+                if(BluetoothConnectManager.getInstance(this).getCurrentState() == ConnectState.CONNECTING){
+                    menu.findItem(R.id.menu_refresh).setActionView(R.layout.actionbar_progress_indeterminate);
+                }else{
+                    menu.findItem(R.id.menu_disconnect).setVisible(true);
+                }
+            }
+        }else {
+            menu.findItem(R.id.menu_stop).setVisible(false);
+            menu.findItem(R.id.menu_scan).setVisible(false);
+            menu.findItem(R.id.menu_filter).setVisible(false);
+            menu.findItem(R.id.menu_refresh).setActionView(null);
+            menu.findItem(R.id.menu_connect).setVisible(false);
+            menu.findItem(R.id.menu_disconnect).setVisible(false);
+            if (MultiConnectManager.getInstance(this).isConnectingDevice()){
+                menu.findItem(R.id.menu_refresh).setActionView(R.layout.actionbar_progress_indeterminate);
+                menu.findItem(R.id.menu_disconnect).setVisible(true);
+            }else{
+                menu.findItem(R.id.menu_connect).setVisible(true);
+            }
         }
         return true;
     }
@@ -247,6 +290,13 @@ public class MainActivity extends ToolbarActivity
                 break;
             case R.id.menu_filter:
                 startActivity(new Intent(this, FilterActivity.class));
+                break;
+            case R.id.menu_connect:
+                MultiConnectManager.getInstance(this).startConnect();
+                break;
+            case R.id.menu_disconnect:
+                BluetoothConnectManager.getInstance(this).closeAll();
+                MultiConnectManager.getInstance(this).closeAll();
                 break;
         }
         return true;
@@ -298,7 +348,13 @@ public class MainActivity extends ToolbarActivity
 
         @Override
         public void onPageSelected(int position) {
-
+            currentTab = position;
+            if (position == 0){
+                fab.setVisibility(View.GONE);
+            }else {
+                fab.setVisibility(View.VISIBLE);
+            }
+            invalidateOptionsMenu();
         }
 
         @Override

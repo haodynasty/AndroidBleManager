@@ -55,4 +55,20 @@
     <style name="GridLayoutTitleTextView">
         <item name="android:textSize">12sp</item>
     </style>
+
+    <style name="popwin_anim_style">
+        <item name="android:windowEnterAnimation">@anim/bottom_menu_enter</item>
+        <item name="android:windowExitAnimation">@anim/bottom_menu_exit</item>
+    </style>
+
+
+    <style name="SimpleListView" parent="@style/Style_Scrollable">
+        <item name="android:background">@color/transparent</item>
+        <item name="android:persistentDrawingCache">all</item>
+        <item name="android:listSelector">@drawable/bg_listitem</item>
+        <item name="android:divider">@color/line_dividingline</item>
+        <item name="android:dividerHeight">0.5dp</item>
+        <item name="android:headerDividersEnabled">false</item>
+        <item name="android:footerDividersEnabled">true</item>
+    </style>
 </resources>

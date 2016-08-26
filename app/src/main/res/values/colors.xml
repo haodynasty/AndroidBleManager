@@ -5,4 +5,20 @@
     <color name="colorAccent">#FF4081</color>
 
     <color name="light_gray">#66e0e0e0</color>
+
+    <color name="white">#ffffff</color><!-- 白色 -->
+    <color name="black">#000000</color>
+    <color name="green">#70A92D</color>
+
+    <!-- text color -->
+    <color name="text_color">#ff434343</color>
+    <color name="text_gray">#ff888271</color>
+    <color name="text_orange_color">#993300</color>
+    <color name="red">#993300</color>
+    <color name="text_content">#ffa19d94</color>
+    <color name="text_desc">#ffbebbb4</color>
+    <color name="text_title">#ff5f5f5f</color>
+    <color name="transparent">#00000000</color>
+    <color name="transparent_light">#e0000000</color>
+    <color name="line_dividingline">#ffd9d3c5</color>
 </resources>

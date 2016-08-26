@@ -197,12 +197,12 @@ public class DeviceDetailsActivity extends ToolbarActivity {
     public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_connect:
-
                 final Intent intent = new Intent(this, DeviceControlActivity.class);
                 intent.putExtra(DeviceControlActivity.EXTRA_DEVICE, mDevice);
-
                 startActivity(intent);
-
+                break;
+            case android.R.id.home:
+                onBackPressed();
                 break;
         }
         return true;
