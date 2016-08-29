@@ -98,6 +98,7 @@ public class SelectListAdapter extends BaseArrayListAdapter<BluetoothLeDevice> {
     @Override
     public void refreshData(List<BluetoothLeDevice> datas) {
         getAllData().clear();
+        map.clear();
         addAll(datas);
     }
 

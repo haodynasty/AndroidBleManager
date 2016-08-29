@@ -53,6 +53,15 @@ public class DeviceStateAdapter extends BaseArrayListAdapter<BluetoothLeDevice>{
         notifyDataSetChanged();
     }
 
+    public void removeDevice(String address){
+        int pos = 0;
+        for (int i=0; i<getCount(); i++){
+            BluetoothLeDevice entity = (BluetoothLeDevice) getItem(i);
+            if (entity.getAddress().equals(address)) pos = i;
+        }
+        delete(pos);
+    }
+
     @Override
     public void add(BluetoothLeDevice data){
         if (!map.containsKey(data.getAddress())){

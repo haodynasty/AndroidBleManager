@@ -2,6 +2,7 @@ package com.blakequ.androidblemanager.ui.connect;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -24,6 +25,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.Bind;
@@ -98,17 +100,32 @@ public class ConnectManyFragment extends Fragment{
             @Override
             public void onSelectDevice(List<BluetoothLeDevice> list) {
                 if (list != null && list.size() > 0) {
-                    int maxLen = multiConnectManager.getMaxLen();
-                    if (list.size() > maxLen) {
-                        mAdapter.addAll(list.subList(0, maxLen));
-                    } else {
-                        mAdapter.addAll(list);
-                    }
+                    mAdapter.addAll(list);
                     multiConnectManager.addDeviceToQueue(getDeviceList(mAdapter.getAllData()));
+                    updateDeviceList();
                 }
             }
         });
         EventBus.getDefault().register(this);
+    }
+
+    private void updateDeviceList(){
+        List<BluetoothLeDevice> adapterlist = mAdapter.getAllData();
+        List<String> tlist = multiConnectManager.getAllDevice();
+        List<BluetoothLeDevice> newList = new ArrayList<>();
+        newList.addAll(adapterlist);
+
+        for (BluetoothLeDevice device:newList){
+            String tmp = null;
+            for (String mac:tlist){
+                if (device.getAddress().equals(mac)){
+                    tmp = mac;
+                }
+            }
+            if (tmp == null){
+                mAdapter.removeDevice(device.getAddress());
+            }
+        }
     }
 
     private String[] getDeviceList(List<BluetoothLeDevice> list){
@@ -132,14 +149,30 @@ public class ConnectManyFragment extends Fragment{
         switch (event.getType()) {
             case POP_SHOW:
                 if (event.getArg1() == 2) {
-                    MainActivity activity = (MainActivity) getActivity();
+                    final MainActivity activity = (MainActivity) getActivity();
                     if (activity != null) {
                         BluetoothLeDeviceStore store = activity.getDeviceStore();
-                        if (store != null) {
+                        if (store != null && store.size() <= 0) {
+                            Snackbar.make(rootView, "Not bluetooth device, please scan device first", Snackbar.LENGTH_LONG)
+                                    .setAction("Scan Now", new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            activity.setCurrentIndex(0);
+                                            activity.startScan();
+                                        }
+                                    }).show();
+                        }else {
                             dialog.addDeviceList(store.getDeviceList());
                             dialog.showAtLocation(rootView, Gravity.BOTTOM, 0, 0);
                         }
                     }
+                }
+                break;
+            case TAB_SWITCH:
+                int tab = event.getArg1();
+                if (tab != 2){
+                    multiConnectManager.release();
+                    mAdapter.clear();
                 }
                 break;
         }

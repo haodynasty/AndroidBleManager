@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * description:the queue using for manager connect request
  */
 public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
+    private static final String TAG = "ConnectRequestQueue";
     private int queueLen;
     private Map<String, ReconnectParamsBean> reconnectMap; //reconnect device list and reconnect times number
     private Map<String, ConnectState> macMap;//<mac address, is connected>
@@ -132,8 +133,10 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         switch (state){
             case NORMAL: //disconnect or close
                 String mac = deviceQueue.peek();
-                if (!isEmpty(mac) && address.equals(mac)){
-                    deviceQueue.poll();
+                if (!isEmpty(mac)){
+                    if (address.equals(mac)){
+                        deviceQueue.poll();
+                    }
                     triggerConnectNextDevice();
                 }
                 triggerReconnect();
@@ -141,8 +144,10 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
             case CONNECTED:
                 reconnectMap.remove(address);
                 String mac1 = deviceQueue.peek();
-                if (!isEmpty(mac1) && address.equals(mac1)){
-                    deviceQueue.poll();
+                if (!isEmpty(mac1)){
+                    if (address.equals(mac1)){
+                        deviceQueue.poll();
+                    }
                     triggerConnectNextDevice();
                 }
                 triggerReconnect();
@@ -155,17 +160,20 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     /**
      * release resource
      */
+    @Override
     public void release(){
         macMap.clear();
         closeAll();
         gattMap.clear();
         reconnectMap.clear();
         deviceQueue.clear();
+        getMainLooperHandler().removeCallbacks(reconnectTask);
     }
 
     /**
-     * get the length of queue
+     * get the size of current queue
      * <p>Notice:this len maybe is not equal of maxLen(connect device num<=maxLen), is dynamic length by sensor physical truth</>
+     * @see #getMaxLen()
      */
     public int getQueueSize(){
         return macMap.size();
@@ -174,13 +182,14 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     /**
      * add device to connect queue, if the number out of range will discard.
      * @param macAddress
+     * @see #startConnect()
      */
     public void addDeviceToQueue(String macAddress){
         if (!macMap.containsKey(macAddress)){
             if (macMap.size() >= queueLen){
                 String address = deviceQueue.poll();
                 if (isEmpty(address)){
-                    address = getAllDevice().get(0);
+                    address = getFirstDevice();
                 }
                 removeDeviceFromQueue(address);
             }
@@ -189,6 +198,11 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         }
     }
 
+    /**
+     * add device to connect queue
+     * @param devices
+     * @see #startConnect()
+     */
     public void addDeviceToQueue(String[] devices){
         if (devices != null && devices.length > 0){
             for (int i=0; i<devices.length; i++){
@@ -219,6 +233,14 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         return list;
     }
 
+    private String getFirstDevice(){
+        if (macMap.size() <= 0) return null;
+        for (String key:macMap.keySet()){
+            return key;
+        }
+        return null;
+    }
+
     /**
      * get all connected device
      * @return
@@ -234,17 +256,6 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         return list;
     }
 
-    /**
-     * check device is connected state
-     * @param address
-     * @return
-     */
-    public boolean isExistConnectedDevice(String address){
-        if (macMap.containsKey(address)){
-            return macMap.get(address) == ConnectState.CONNECTED;
-        }
-        return false;
-    }
 
     /**
      * get bluetooth state of connect
@@ -292,6 +303,10 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         return false;
     }
 
+    /**
+     * is have device is connected
+     * @return
+     */
     public boolean isConnectedDevice(){
         for (ConnectState value:macMap.values()){
             if (value == ConnectState.CONNECTED){
@@ -340,8 +355,9 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
      */
     private synchronized void startReconnectTask(){
         if (reconnectMap.size() <= 0) return;
-        long nextTime = SystemClock.elapsedRealtime();
+        long nextTime = SystemClock.elapsedRealtime()*2;
         String address = "";
+        //select minimum time of list
         for (String addr:reconnectMap.keySet()){
             ReconnectParamsBean bean = reconnectMap.get(addr);
             if (bean.getNextReconnectTime() < nextTime){
@@ -450,10 +466,10 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
                 gattMap.put(address, mBluetoothGatt);
                 updateConnectState(address, ConnectState.CONNECTING);
                 return true;
-            }else{
+            } else {
                 LogUtils.e(TAG, "Get Gatt fail!, address=" + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
             }
-        }else{
+        } else {
             LogUtils.e(TAG, "Device not found, address=" + address);
         }
         return false;
@@ -506,10 +522,18 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         }
     }
 
+    /**
+     * set max connected number of bluetooth
+     * @param queueLen
+     */
     protected void setMaxLen(int queueLen){
         this.queueLen = queueLen;
     }
 
+    /**
+     * max connected number of bluetooth queue
+     * @return
+     */
     public int getMaxLen(){
         return this.queueLen;
     }

@@ -2,8 +2,6 @@ package com.blakequ.bluetooth_manager_lib.connect;
 
 import android.os.SystemClock;
 
-import com.blakequ.bluetooth_manager_lib.BleManager;
-
 /**
  * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
  * <p/>
@@ -25,7 +23,7 @@ public class ReconnectParamsBean {
     private int number;//reconnect times number
     private long nextReconnectTime;//next reconnect time
     private long startDisconnectTime;
-    private static long BASE_SPACE_TIME = BleManager.reconnectTime; //space time to reconnect
+    private static long BASE_SPACE_TIME = ConnectConfig.reconnectTime; //space time to reconnect
 
     public ReconnectParamsBean(String address) {
         this.address = address;
@@ -48,7 +46,7 @@ public class ReconnectParamsBean {
      * @return
      */
     public long getNextReconnectTime() {
-        if (number <= BleManager.reconnectedNum){
+        if (number <= ConnectConfig.reconnectedNum){
             nextReconnectTime = startDisconnectTime + BASE_SPACE_TIME*number;
         }else {
             nextReconnectTime = (long) (startDisconnectTime + BASE_SPACE_TIME* Math.pow(2, number));
@@ -61,10 +59,21 @@ public class ReconnectParamsBean {
     }
 
     public void addNumber() {
+        this.startDisconnectTime = SystemClock.elapsedRealtime();
         this.number++;
     }
 
     public void setNumber(int num){
         this.number = num;
+    }
+
+    @Override
+    public String toString() {
+        return "ReconnectParamsBean{" +
+                "address='" + address + '\'' +
+                ", number=" + number +
+                ", next reconnect after " + (getNextReconnectTime()-startDisconnectTime)/1000 + "seconds"+
+                ", startDisconnectTime=" + startDisconnectTime +
+                '}';
     }
 }

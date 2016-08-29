@@ -67,6 +67,12 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
         connectStateListeners = new ArrayList<>();
     }
 
+    @Override
+    public void release() {
+        closeAll();
+        gattMap.clear();
+    }
+
 
     public static BluetoothConnectManager getInstance(Context context){
         if (INSTANCE == null){

@@ -47,6 +47,11 @@ public abstract class BluetoothConnectInterface {
     }
 
     /**
+     * release resource
+     */
+    public abstract void release();
+
+    /**
      * get gatt connect callback
      * @return
      */

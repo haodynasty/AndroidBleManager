@@ -187,7 +187,7 @@ public class MainActivity extends ToolbarActivity
         });
     }
 
-    private void startScan(){
+    public void startScan(){
         if (mBluetoothUtils.isBluetoothLeSupported()){
             if (!mBluetoothUtils.isBluetoothOn()){
                 mBluetoothUtils.askUserToEnableBluetoothIfNeeded();
@@ -292,7 +292,18 @@ public class MainActivity extends ToolbarActivity
                 startActivity(new Intent(this, FilterActivity.class));
                 break;
             case R.id.menu_connect:
-                MultiConnectManager.getInstance(this).startConnect();
+                if (mDeviceStore.size() == 0){
+                    Snackbar.make(fab, "Not bluetooth device, please scan device first", Snackbar.LENGTH_LONG)
+                            .setAction("Scan Now", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    mViewPager.setCurrentItem(0, false);
+                                    startScan();
+                                }
+                            }).show();
+                }else {
+                    MultiConnectManager.getInstance(this).startConnect();
+                }
                 break;
             case R.id.menu_disconnect:
                 BluetoothConnectManager.getInstance(this).closeAll();
@@ -317,8 +328,10 @@ public class MainActivity extends ToolbarActivity
             // Handle the camera action
             mViewPager.setCurrentItem(0, false);
         } else if (id == R.id.nav_gallery) {
+            scanManager.stopCycleScan();
             mViewPager.setCurrentItem(1, false);
         } else if (id == R.id.nav_slideshow) {
+            scanManager.stopCycleScan();
             mViewPager.setCurrentItem(2, false);
         } else if (id == R.id.nav_manage) {
             Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -339,6 +352,11 @@ public class MainActivity extends ToolbarActivity
         return true;
     }
 
+    public void setCurrentIndex(int index){
+        if (index >= 0 && index < fragments.size()){
+            mViewPager.setCurrentItem(index, false);
+        }
+    }
 
     private ViewPager.OnPageChangeListener listener = new ViewPager.OnPageChangeListener() {
         @Override
@@ -349,6 +367,7 @@ public class MainActivity extends ToolbarActivity
         @Override
         public void onPageSelected(int position) {
             currentTab = position;
+            EventBus.getDefault().post(new UpdateEvent(UpdateEvent.Type.TAB_SWITCH, position));
             if (position == 0){
                 fab.setVisibility(View.GONE);
             }else {

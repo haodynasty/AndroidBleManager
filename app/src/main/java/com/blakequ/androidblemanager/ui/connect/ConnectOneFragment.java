@@ -3,6 +3,7 @@ package com.blakequ.androidblemanager.ui.connect;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -132,14 +133,30 @@ public class ConnectOneFragment extends Fragment{
         switch (event.getType()){
             case POP_SHOW:
                 if (event.getArg1() == 1){
-                    MainActivity activity = (MainActivity) getActivity();
+                    final MainActivity activity = (MainActivity) getActivity();
                     if (activity != null) {
                         BluetoothLeDeviceStore store = activity.getDeviceStore();
-                        if (store != null) {
+                        if (store != null && store.size() <= 0) {
+                            Snackbar.make(rootView, "Not bluetooth device, please scan device first", Snackbar.LENGTH_LONG)
+                                    .setAction("Scan Now", new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            activity.setCurrentIndex(0);
+                                            activity.startScan();
+                                        }
+                                    }).show();
+                        }else {
                             dialog.addDeviceList(store.getDeviceList());
                             dialog.showAtLocation(rootView, Gravity.BOTTOM, 0, 0);
                         }
                     }
+                }
+                break;
+            case TAB_SWITCH:
+                int tab = event.getArg1();
+                if (tab != 1){
+                    connectManager.release();
+                    mAdapter.clear();
                 }
                 break;
         }

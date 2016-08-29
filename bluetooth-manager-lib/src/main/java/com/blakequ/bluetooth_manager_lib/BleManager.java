@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.support.annotation.NonNull;
 
 import com.blakequ.bluetooth_manager_lib.connect.BluetoothConnectManager;
 import com.blakequ.bluetooth_manager_lib.connect.multiple.MultiConnectManager;
@@ -28,8 +29,6 @@ import com.blakequ.bluetooth_manager_lib.util.LogUtils;
  */
 @TargetApi(18)
 public final class BleManager {
-    public static long reconnectTime = 4000; //断开后等待尝试重新连接的时间
-    public static int reconnectedNum = 4; //断开后重新连接的次数
     private BluetoothConnectManager singleConnectManager;
     private BluetoothScanManager scanManager;
     private MultiConnectManager multiConnectManager;
@@ -56,7 +55,7 @@ public final class BleManager {
      * @return
      * @see #getMultiConnectManager(Context)
      */
-    public BluetoothConnectManager getConnectManager(Context context){
+    public BluetoothConnectManager getConnectManager(@NonNull Context context){
         return BluetoothConnectManager.getInstance(context);
     }
 
@@ -65,7 +64,7 @@ public final class BleManager {
      * @param context
      * @return
      */
-    public BluetoothScanManager getScanManager(Context context){
+    public BluetoothScanManager getScanManager(@NonNull Context context){
         return BluetoothScanManager.getInstance(context);
     }
 
@@ -75,7 +74,7 @@ public final class BleManager {
      * @return
      * @see #getConnectManager(Context)
      */
-    public MultiConnectManager getMultiConnectManager(Context context){
+    public MultiConnectManager getMultiConnectManager(@NonNull Context context){
         return MultiConnectManager.getInstance(context);
     }
 

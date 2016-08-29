@@ -8,6 +8,8 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 
 import com.blakequ.bluetooth_manager_lib.connect.BluetoothSubScribeData;
+import com.blakequ.bluetooth_manager_lib.connect.ConnectConfig;
+import com.blakequ.bluetooth_manager_lib.connect.ConnectState;
 import com.blakequ.bluetooth_manager_lib.util.LogUtils;
 
 import java.util.ArrayList;
@@ -39,7 +41,7 @@ import java.util.List;
  */
 @TargetApi(18)
 public final class MultiConnectManager extends ConnectRequestQueue {
-    private static int maxConnectDeviceNum = 5; //默认一次连接设备数为5
+    private static final String TAG = "MultiConnectManager";
     private static MultiConnectManager INSTANCE;
     private BluetoothManager bluetoothManager;
     private static String serviceUUID;
@@ -48,7 +50,7 @@ public final class MultiConnectManager extends ConnectRequestQueue {
     private static Object obj = new Object();
 
     private MultiConnectManager(Context context){
-        super(context, maxConnectDeviceNum);
+        super(context, ConnectConfig.maxConnectDeviceNum);
         bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         subscribeList = new ArrayList<>();
     }
@@ -70,7 +72,7 @@ public final class MultiConnectManager extends ConnectRequestQueue {
         if (!isEmpty(devices)){
             List<BluetoothDevice> newDevices = new ArrayList<BluetoothDevice>();
             for (BluetoothDevice device: devices){
-                if (isExistConnectedDevice(device.getAddress())){
+                if (getDeviceState(device.getAddress()) == ConnectState.CONNECTED) {
                     newDevices.add(device);
                 }else {
                     LogUtils.i(TAG, "Not exist connected device in queue "+device.getAddress());

@@ -78,6 +78,7 @@ public class UpdateEvent {
     public static enum Type{
         SCAN_UPDATE,
         BLE_DATA,
-        POP_SHOW
+        POP_SHOW,
+        TAB_SWITCH
     }
 }
