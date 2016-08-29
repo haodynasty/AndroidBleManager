@@ -226,8 +226,8 @@ public class DeviceControlActivity extends ToolbarActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        connectManager.closeAll();
-        connectManager.removeConnectStateListener(stateListener);
+//        connectManager.closeAll();
+//        connectManager.removeConnectStateListener(stateListener);
     }
 
     @Override

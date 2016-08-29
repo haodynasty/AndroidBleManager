@@ -94,6 +94,7 @@ public class ConnectOneFragment extends Fragment{
             @Override
             public void onSelectDevice(List<BluetoothLeDevice> list) {
                 if (list != null && list.size() > 0){
+                    System.out.println("---"+list.size());
                     mAdapter.addAll(list);
                 }
             }
