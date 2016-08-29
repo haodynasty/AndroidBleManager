@@ -8,14 +8,12 @@
 - 经过实际场景测试，实际产品的使用
 
 [![Download][bintray_svg]][bintray_url]
-![][file_downloader_svg]
-[![Build Status][build_status_svg]][build_status_link]
 
 # 使用
 将下面的代码增加到build.gradle文件中
 ```
 dependencies {
-    compile 'com.liulishuo.filedownloader:library:1.0.0'
+    compile 'com.blakequ.androidblemanager:bluetooth-manager-lib:1.0.0'
 }
 ```
 
@@ -139,7 +137,7 @@ connectManager.setBluetoothGattCallback(new BluetoothGattCallback() {
 - 蓝牙读写数据与通知
 
 为了简化蓝牙连接，已经自动封装了蓝牙Gatt的读写和通知。
-1. [传统方式](https://developer.android.com/guide/topics/connectivity/bluetooth-le.html)
+    - 传统方式
 ```
 private BluetoothGatt mBluetoothGatt;
 BluetoothGattCharacteristic characteristic;
@@ -152,7 +150,7 @@ BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
 descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE); 
 mBluetoothGatt.writeDescriptor(descriptor);
 ```
-2. 封装使用
+    - 封装使用
 ```
 //start subscribe auto
 //1.set service uuid(将要读取GattService的UUID)
@@ -316,4 +314,8 @@ ConnectConfig.updateReconnectSpaceTime(4000); //间隔重连时间
 
 # 8. Apk
 - [demo address](http://fir.im/pxfn)
-- 下载二维码
+- <p><img src="screenshot/ecode.png"/></p>
+
+
+[bintray_svg]: https://api.bintray.com/packages/jacksgong/maven/FileDownloader/images/download.svg
+[bintray_url]: https://bintray.com/jacksgong/maven/FileDownloader/_latestVersion

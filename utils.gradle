@@ -1,0 +1,32 @@
+//定义公共工具函数
+
+//读取配置文件
+def initProperty(){
+    println '-------init and read gradle.properties value'
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('bintray.properties').newDataInputStream())
+    ext.PROJ_GROUP = properties.getProperty("PROJ_GROUP")
+    ext.PROJ_VERSION = properties.getProperty("PROJ_VERSION")
+    ext.PROJ_NAME = project.name
+    ext.PROJ_WEBSITEURL = properties.getProperty("PROJ_WEBSITEURL")
+    ext.PROJ_ISSUETRACKERURL = properties.getProperty("PROJ_ISSUETRACKERURL")
+    ext.PROJ_VCSURL = properties.getProperty("PROJ_VCSURL")
+    ext.PROJ_DESCRIPTION = properties.getProperty("PROJ_DESCRIPTION")
+    ext.PROJ_ARTIFACTID = properties.getProperty("PROJ_ARTIFACTID")
+    ext.LICENSE_NAME = properties.getProperty("LICENSE_NAME")
+    ext.LICENSE_URL = properties.getProperty("LICENSE_URL")
+    ext.DEVELOPER_ID = properties.getProperty("DEVELOPER_ID")
+    ext.DEVELOPER_NAME = properties.getProperty("DEVELOPER_NAME")
+    ext.DEVELOPER_EMAIL = properties.getProperty("DEVELOPER_EMAIL")
+    ext.KEY_PWD = properties.getProperty("KEY_PWD");
+    ext.KEY_ALIAS = properties.getProperty("KEY_ALIAS");
+    ext.STORE_PWD = properties.getProperty("STORE_PWD");
+    ext.STORE_FILE = properties.getProperty("STORE_FILE");
+    ext.BINTRAY_USER = properties.getProperty("bintray.user");
+    ext.BINTRAY_KEY = properties.getProperty("bintray.apikey");
+}
+
+
+ext{
+    initProperty = this.&initProperty
+}
