@@ -30,8 +30,6 @@ buildscript {
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
 
-        classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1"
-
         //using for upload to bintray lib
         File file = project.rootProject.file('local.properties')
         if (file.exists()) {
@@ -42,6 +40,7 @@ buildscript {
                 println ':global:include upload 2 maven classpath'
                 classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
                 classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
+                classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1"
             }
         }
     }

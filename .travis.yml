@@ -1,5 +1,5 @@
 language: android
-# �ο���https://github.com/nukc/how-to-use-travis-ci
+# from https://github.com/nukc/how-to-use-travis-ci
 android:
   components:
     - platform-tools
@@ -12,5 +12,8 @@ android:
 after_script:
     - cat ./app/build/outputs/lint-results.xml
     - cat ./bluetooth-manager-lib/build/outputs/lint-results.xml
+
+before_install:
+ - chmod +x gradlew
 
 sudo: false
