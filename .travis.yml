@@ -1,0 +1,16 @@
+language: android
+# �ο���https://github.com/nukc/how-to-use-travis-ci
+android:
+  components:
+    - platform-tools
+    - build-tools-23.0.3
+    - android-23
+    - extra
+    - extra-android-m2repository     # Android Support Repository
+    - extra-android-support          # Support Library
+
+after_script:
+    - cat ./app/build/outputs/lint-results.xml
+    - cat ./bluetooth-manager-lib/build/outputs/lint-results.xml
+
+sudo: false

@@ -7,14 +7,21 @@
 - 使用简单快捷，一键集成
 - 经过实际场景测试，实际产品的使用
 
-[![Download][bintray_svg]][bintray_url]
-
 # 使用
-将下面的代码增加到build.gradle文件中
+将下面的代码增加到build.gradle文件中,${latest.version} is [![Download][bintray_svg]][bintray_url]
 ```
 dependencies {
-    compile 'com.blakequ.androidblemanager:bluetooth-manager-lib:1.0.0'
+    compile 'com.blakequ.androidblemanager:bluetooth-manager-lib:${latest.version}'
 }
+```
+maven
+```
+<dependency>
+  <groupId>com.blakequ.androidblemanager</groupId>
+  <artifactId>bluetooth-manager-lib</artifactId>
+  <version>${latest.version}</version>
+  <type>pom</type>
+</dependency>
 ```
 
 
@@ -280,6 +287,7 @@ if SDK >= 23, 增加权限
 # 5.更新日志
 - v1.0(2016/8/25): 完成基本框架（扫描，设备连接）
 - v1.0(2016/8/29): 修复多设备连接bug
+- v1.0(2016/8/30): 增加demo权限检查
 
 # 6. TODO
 
@@ -312,7 +320,9 @@ ConnectConfig.updateReconnectSpaceTime(4000); //间隔重连时间
 - [Bluetooth-LE-Library](https://github.com/alt236/Bluetooth-LE-Library---Android)
 - [BluetoothCompat](https://github.com/joerogers/BluetoothCompat)
 
-# 8. Apk
+# 8. [个人博客](http://blakequ.com/)
+
+# 9. Apk
 - [demo address](http://fir.im/pxfn)
 - <p><img src="screenshot/ecode.png"/></p>
 

@@ -1,18 +1,14 @@
 apply plugin: 'com.android.library'
-apply from:gradle.utilsGradle
-
-initProperty()
-version = PROJ_VERSION
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion COMPILE_SDK_VERSION
+    buildToolsVersion BUILD_TOOLS_VERSION
 
     defaultConfig {
-        minSdkVersion 18
-        targetSdkVersion 23
-        versionCode 1
-        versionName version
+        minSdkVersion MIN_SDK_VERSION
+        targetSdkVersion TARGET_SDK_VERSION
+        versionCode VERSION_CODE as int
+        versionName VERSION_NAME as String
     }
 
     buildTypes {
@@ -33,4 +29,10 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.4.0'
 }
 
-apply from:gradle.bintrayGradle
+apply from: 'https://raw.githubusercontent.com/haodynasty/JCenter/master/license.gradle'
+
+if (isForUpload2Maven()) {
+    println ':library:include upload 2 maven methods'
+    apply from: 'https://raw.githubusercontent.com/haodynasty/JCenter/master/installv1.gradle'
+    apply from: 'https://raw.githubusercontent.com/haodynasty/JCenter/master/bintrayv1.gradle'
+}

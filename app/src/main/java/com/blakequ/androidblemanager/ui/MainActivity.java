@@ -1,9 +1,13 @@
 package com.blakequ.androidblemanager.ui;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -12,6 +16,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,7 +32,10 @@ import com.blakequ.androidblemanager.ui.connect.ConnectOneFragment;
 import com.blakequ.androidblemanager.ui.scan.ScanFragment;
 import com.blakequ.androidblemanager.utils.BluetoothUtils;
 import com.blakequ.androidblemanager.utils.Constants;
+import com.blakequ.androidblemanager.utils.IntentUtils;
+import com.blakequ.androidblemanager.utils.LocationUtils;
 import com.blakequ.androidblemanager.utils.PreferencesUtils;
+import com.blakequ.androidblemanager.widget.MyAlertDialog;
 import com.blakequ.androidblemanager.widget.ScrollViewPager;
 import com.blakequ.bluetooth_manager_lib.BleManager;
 import com.blakequ.bluetooth_manager_lib.connect.BluetoothConnectManager;
@@ -47,7 +55,15 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnNeverAskAgain;
+import permissions.dispatcher.OnPermissionDenied;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.PermissionUtils;
+import permissions.dispatcher.RuntimePermissions;
 
+@RuntimePermissions
 public class MainActivity extends ToolbarActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -65,6 +81,8 @@ public class MainActivity extends ToolbarActivity
     private int filterRssi;
     private boolean filterSwitch;
     private int currentTab = 0;
+    private String[] permissionList = {Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -188,10 +206,8 @@ public class MainActivity extends ToolbarActivity
     }
 
     public void startScan(){
-        if (mBluetoothUtils.isBluetoothLeSupported()){
-            if (!mBluetoothUtils.isBluetoothOn()){
-                mBluetoothUtils.askUserToEnableBluetoothIfNeeded();
-            }else {
+        if (checkPermission()){
+            if (checkIsBleState()){
                 mDeviceStore.clear();
                 EventBus.getDefault().post(new UpdateEvent(UpdateEvent.Type.SCAN_UPDATE));
                 scanManager.startCycleScan();
@@ -202,8 +218,22 @@ public class MainActivity extends ToolbarActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK){
-            startScan();
+        if(requestCode == 11 || requestCode == 12) {//请求位置信息
+            if (LocationUtils.isGpsProviderEnabled(this)){
+                Toast.makeText(this, R.string.ble_location_is_open, Toast.LENGTH_LONG).show();
+            }else{
+                if (requestCode == 11){
+                    showReOpenLocationDialog();
+                }else{
+                    Toast.makeText(this, R.string.ble_location_not_open_notice, Toast.LENGTH_LONG).show();
+                }
+            }
+        }else{
+            if (resultCode != Activity.RESULT_OK){
+//                checkIsBleState();
+            }else{
+                startScan();
+            }
         }
     }
 
@@ -382,4 +412,220 @@ public class MainActivity extends ToolbarActivity
         }
     };
 
+    private boolean checkIsBleState(){
+        if (!mBluetoothUtils.isBluetoothLeSupported()){
+            showNotSupportDialog();
+        }else if(!mBluetoothUtils.isBluetoothOn()){
+            showOpenBleDialog();
+        }else{
+            return true;
+        }
+        return false;
+    }
+
+    private void showNotSupportDialog(){
+        MyAlertDialog.getDialog(this, R.string.ble_not_support, R.string.ble_exit_app,
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        finish();
+                    }
+                }).show();
+    }
+
+    private void showExitDialog(){
+        MyAlertDialog.getDialog(this, R.string.exit_app, R.string.ble_exit_app, R.string.cancel,
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        finish();
+                    }
+                },
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).show();
+    }
+
+    /**
+     * 检查无法扫描到的情况dialog
+     */
+    private void showCheckBleNotScanDialog() {
+        if (Build.VERSION.SDK_INT >= 23){
+            MyAlertDialog.getDialog(this, R.string.ble_not_scan, R.string.ble_not_scan_bt1, R.string.cancel,
+                    new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (!LocationUtils.isGpsProviderEnabled(MainActivity.this)){
+                                showOpenLocationSettingDialog();
+                            }else{
+                                Toast.makeText(MainActivity.this, R.string.ble_location_has_open, Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    },
+                    new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).show();
+        }else{
+            MyAlertDialog.getDialog(this, R.string.ble_not_scan1, R.string.cancel,
+                    new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).show();
+        }
+    }
+
+    /**
+     * 是否打开ble
+     */
+    private void showOpenBleDialog() {
+        MyAlertDialog.getDialog(this, R.string.ble_not_open, R.string.ble_open, R.string.cancel,
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mBluetoothUtils.askUserToEnableBluetoothIfNeeded();
+                        dialog.dismiss();
+                    }
+                },
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).show();
+    }
+
+    /**
+     * 重新检查位置信息是否开启
+     */
+    private void showReOpenLocationDialog() {
+        MyAlertDialog.getDialog(this, R.string.ble_location_not_open, R.string.ble_location_open, R.string.cancel,
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        IntentUtils.startLocationSettings(MainActivity.this, 12);
+                        dialog.dismiss();
+                    }
+                },
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).show();
+    }
+
+    /**
+     * 打开位置信息
+     */
+    private void showOpenLocationSettingDialog(){
+        View view = LayoutInflater.from(this).inflate(R.layout.include_location_dialog, null);
+        MyAlertDialog.getViewDialog(this, view, R.string.ble_location_open, R.string.cancel,
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        IntentUtils.startLocationSettings(MainActivity.this, 11);
+                        dialog.dismiss();
+                    }
+                },
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        showReOpenLocationDialog();
+                        dialog.dismiss();
+                    }
+                }, false).show();
+    }
+
+
+    /**
+     * 检查权限
+     * @return
+     */
+    public boolean checkPermission(){
+        if (Build.VERSION.SDK_INT >= 23){
+            boolean hasPermission = PermissionUtils.hasSelfPermissions(this, permissionList);
+            MainActivityPermissionsDispatcher.showCheckPermissionStateWithCheck(this);
+            if (!LocationUtils.isGpsProviderEnabled(this)){
+                return false;
+            }
+            return hasPermission;
+        }
+        return true;
+    }
+
+
+    //请求权限
+    /**
+     * 这个方法中写正常的逻辑（假设有该权限应该做的事）
+     */
+    @NeedsPermission({Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.BLUETOOTH,
+            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION})
+    void showCheckPermissionState(){
+        //检查是否开启位置信息（如果没有开启，则无法扫描到任何蓝牙设备在6.0）
+        if (!LocationUtils.isGpsProviderEnabled(this)){
+            showOpenLocationSettingDialog();
+        }
+    }
+
+    /**
+     * 弹出权限同意窗口之前调用的提示窗口
+     * @param request
+     */
+    @OnShowRationale({Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.BLUETOOTH,
+            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION})
+    void showRationaleForPermissionState(PermissionRequest request) {
+        // NOTE: Show a rationale to explain why the permission is needed, e.g. with a dialog.
+        // Call proceed() or cancel() on the provided PermissionRequest to continue or abort
+        MyAlertDialog.showRationaleDialog(this, R.string.permission_rationale, request);
+    }
+
+    /**
+     * 提示窗口和权限同意窗口--被拒绝时调用
+     */
+    @OnPermissionDenied({Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.BLUETOOTH,
+            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION})
+    void onPermissionStateDenied() {
+        // NOTE: Deal with a denied permission, e.g. by showing specific UI
+        // or disabling certain functionality
+        Toast.makeText(this, R.string.permission_denied, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * 当完全拒绝了权限打开之后调用
+     */
+    @OnNeverAskAgain({Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.BLUETOOTH,
+            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION})
+    void onPermissionNeverAskAgain() {
+        MyAlertDialog.showOpenSettingDialog(this, R.string.open_setting_permission);
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // NOTE: delegate the permission handling to generated method
+        MainActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
 }

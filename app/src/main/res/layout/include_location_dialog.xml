@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:background="@color/transparent" >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/text_title"
+        android:textSize="16sp"
+        android:layout_marginTop="14dp"
+        android:text="@string/ble_location_notice"/>
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="0dp"
+        android:layout_marginTop="-35dp"
+        android:layout_marginBottom="-35dp"
+        android:src="@mipmap/ic_location_setting" />
+</LinearLayout>

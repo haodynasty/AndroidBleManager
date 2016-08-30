@@ -79,4 +79,32 @@
     <string name="label_uuid">UUID:</string>
     <string name="label_updated">Updated:</string>
     <string name="label_decriptor">Descriptor:</string>
+
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="button_allow">Agree</string>
+    <string name="button_deny">Refuse</string>
+    <string name="open_setting">Setting</string>
+    <string name="open_setting_info">You must open file read/write permission, open now？</string>
+    <string name="open_setting_permission">您拒绝了部分权限，将无法正常使用APP，是否现在进入权限设置界面，点击权限-打开所有权限，现在就去设置？</string>
+    <string name="permission_denied">请求权限被拒绝，为了能正常使用APP，必须要打开所有权限</string>
+    <string name="permission_rationale">1.蓝牙权限用于基本蓝牙操作；\n2.位置权限将用于手机定位和蓝牙；\n为了正常使用APP必须打开所有权限，点击同意</string>
+
+    <string name="ble_location_notice">注意：由于Android6.0系统限制，务必打开位置信息，否则将无法搜索到蓝牙设备, 开启之后会显示为下图红色样式</string>
+    <string name="ble_location_open">Setting</string>
+    <string name="ble_location_not_open">您取消了开启位置信息，Android6.0系统将无法搜索到蓝牙设备，是否重新设置？</string>
+    <string name="ble_location_is_open">已经开启位置信息</string>
+    <string name="ble_location_has_open">您已经开启了位置，请检查1,2的情况</string>
+    <string name="ble_location_not_open_notice">没有打开位置信息，手机将无法搜索到蓝牙设备，无法正常使用蓝牙设备</string>
+    <string name="ble_not_scan">无法扫描到任何设备，请检查下列情况：\n1.蓝牙设备不在附近或者没有电量\n2.蓝牙设备是否正连接其他手机（其他手机可暂时关闭蓝牙）\n3.没有开启位置信息（点击检查位置确认）</string>
+    <string name="ble_not_scan1">无法扫描到任何设备，请检查是否是以下情况：\n1.蓝牙设备不在附近或者没有电量\n2.蓝牙设备是否正连接其他手机（其他手机可暂时关闭蓝牙）</string>
+    <string name="ble_not_scan_bt1">检查位置开启</string>
+    <string name="ble_not_support">BLE not support, can not use app</string>
+    <string name="ble_exit_app">Exit App?</string>
+    <string name="exit_app">Are you sure exit app?</string>
+    <string name="ble_open">Open bluetooth</string>
+    <string name="ble_setting">Setting</string>
+    <string name="ble_not_open">Bluetooth not open</string>
+
+
 </resources>

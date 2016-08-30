@@ -1,9 +1,5 @@
 *.iml
 .DS_Store
-bintray.gradle
-utils.gradle
-package_aar.gradle
-bintray.properties
 *.keystore
 /captures
 
