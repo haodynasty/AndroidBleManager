@@ -1,6 +1,7 @@
 *.iml
 .DS_Store
 *.keystore
+*.jks
 /captures
 
 /.idea

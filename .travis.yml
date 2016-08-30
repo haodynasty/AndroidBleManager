@@ -1,19 +1,37 @@
 language: android
-# from https://github.com/nukc/how-to-use-travis-ci
+sudo: false
+
 android:
   components:
-    - platform-tools
-    - build-tools-23.0.3
-    - android-23
-    - extra
-    - extra-android-m2repository     # Android Support Repository
-    - extra-android-support          # Support Library
-
-after_script:
-    - cat ./app/build/outputs/lint-results.xml
-    - cat ./bluetooth-manager-lib/build/outputs/lint-results.xml
+  - platform-tools
+  - build-tools-23.0.3
+  - android-23
+  - tools
+  - extra
+  - extra-android-m2repository
+  - extra-android-support
 
 before_install:
- - chmod +x gradlew
-
-sudo: false
+- openssl aes-256-cbc -K $encrypted_217a4fe513fa_key -iv $encrypted_217a4fe513fa_iv
+  -in blakequ.jks.enc -out blakequ.jks -d
+- chmod +x gradlew
+- gem install fir-cli
+script:
+- "./gradlew assembleRelease"
+after_script:
+- cat ./app/build/outputs/lint-results.xml
+- cat ./bluetooth-manager-lib/build/outputs/lint-results.xml
+before_deploy:
+- mv app/build/outputs/apk/app-release.apk app/build/outputs/apk/bluetooth_manager.apk
+after_deploy:
+- fir p app/build/outputs/apk/bluetooth_manager.apk -T $FIR_TOKEN -c "`git cat-file tag $TRAVIS_TAG`"
+deploy:
+  provider: releases
+  api_key:
+    secure: OzltNhK358F6MPWbK4K5a60DpN75ILQikXxj8Bh+1c9c/XQTWVHi7oeR7ghti+P+oI/qM2ut8wuQ/ifyWrP1lAtF+3ycdJDTD4r1kfaASSQ3hzBn+wbTJgQ/01+wDlN/xQaHQJrEtqteUT0PursmjGry6pOxbvlYbs17S1fhnLzTvwSg2NGDSZ1OwolJQ1CwM7BnmncnJ+99JSPGQHMmcMenmD5Et7BsPg4+wU4ZJHDfpg5dHyxPJzTryfrCBXgKkAMY/d3Rpx7R68aQNvsJBeZIkR/WCW65ku9amO78Q/bi3UttZosEH0JioGeeXf19RLVK8btXr4SoS7AkeyB9Vmp1gEjDKMfE1XZXPHIGgX+uaCPp8vi3oFI+NEio0akEEi5jJUd5azDvuGYNyByI2Q+VLe9LfXVUbD85iATg10zkwaAyUOqyIB/7eN7pzckg0olY/CaiDK6ocJYeeoG7GH3XDnO1CXnnave3qnlmoAOODhdt4vTkRdlzKBCNCaJ9DgcIdZ3g/+Cb+WwqAYAMLeZOA3bOfNyU3f5F4G0rej6zpoZboUmtrv0y/Ug+BrwmzMKF0jrxWLZdfAjOc0rWL8QMIffHrDg6o1RTvp1yae5UGQN5gnMr+62dpIGJF22lwy2MjrR94Ea9d1snCvHQVQRMcDwQdrPSREex5cATrE4=
+  file: app/build/outputs/apk/bluetooth_manager.apk
+  skip_cleanup: true
+  on:
+    tags: true
+    all_branches: true
+    repo: haodynasty/AndroidBleManager

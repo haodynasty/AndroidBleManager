@@ -7,6 +7,9 @@
 - 使用简单快捷，一键集成
 - 经过实际场景测试，实际产品的使用
 
+[![Build Status](https://travis-ci.org/haodynasty/AndroidBleManager.svg?branch=master)](https://travis-ci.org/haodynasty/AndroidBleManager)
+[![Download][bintray_svg]][bintray_url]
+
 # 使用
 将下面的代码增加到build.gradle文件中,${latest.version} is [![Download][bintray_svg]][bintray_url]
 ```

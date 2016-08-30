@@ -14,16 +14,21 @@ android {
         versionCode VERSION_CODE as int
         versionName VERSION_NAME as String
         //设置输出app默认前缀名称
-        project.ext.set("archivesBaseName", "BleManager_v" + versionName + "_"+today);
+        //project.ext.set("archivesBaseName", "BleManager_v" + versionName + "_"+today);
     }
 
     //签名配置
     signingConfigs {
         release {
             storeFile file('blakequ.jks')
-            storePassword 'blakequ'
-            keyAlias 'Blakequ'
-            keyPassword 'blakequ'
+            //this is for gradle.properties
+//            storePassword project.hasProperty("KEYSTORE_PASS") ? KEYSTORE_PASS : System.getenv("KEYSTORE_PASS")
+//            keyAlias project.hasProperty("ALIAS_NAME") ? ALIAS_NAME : System.getenv("ALIAS_NAME")
+//            keyPassword project.hasProperty("ALIAS_PASS") ? ALIAS_PASS : System.getenv("ALIAS_PASS")
+            //this is for local.properties
+            storePassword getLocalProperty("KEYSTORE_PASS") ? getLocalProperty("KEYSTORE_PASS") : System.getenv("KEYSTORE_PASS")
+            keyAlias getLocalProperty("ALIAS_NAME") ? getLocalProperty("ALIAS_NAME") : System.getenv("ALIAS_NAME")
+            keyPassword getLocalProperty("ALIAS_PASS") ? getLocalProperty("ALIAS_PASS") : System.getenv("ALIAS_PASS")
         }
     }
 
