@@ -13,7 +13,7 @@ android:
 
 before_install:
 - openssl aes-256-cbc -K $encrypted_217a4fe513fa_key -iv $encrypted_217a4fe513fa_iv
-  -in blakequ.jks.enc -out blakequ.jks -d
+  -in app/blakequ.jks.enc -out app/blakequ.jks -d
 - chmod +x gradlew
 - gem install fir-cli
 script:
