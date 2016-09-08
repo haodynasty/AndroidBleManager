@@ -45,6 +45,7 @@ import com.blakequ.bluetooth_manager_lib.scan.BluetoothScanManager;
 import com.blakequ.bluetooth_manager_lib.scan.ScanOverListener;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanCallbackCompat;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanResultCompat;
+import com.blakequ.bluetooth_manager_lib.util.LogUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -189,6 +190,7 @@ public class MainActivity extends ToolbarActivity
             @Override
             public void onScanResult(int callbackType, ScanResultCompat result) {
                 super.onScanResult(callbackType, result);
+                LogUtils.i("MainActivity", "scan device "+result.getLeDevice().getAddress()+" "+result.getScanRecord().getDeviceName());
                 if (filterSwitch) {
                     if (filterRssi <= result.getRssi()) {
                         if (filterName == null || filterName.equals("")) {
@@ -210,7 +212,8 @@ public class MainActivity extends ToolbarActivity
             if (checkIsBleState()){
                 mDeviceStore.clear();
                 EventBus.getDefault().post(new UpdateEvent(UpdateEvent.Type.SCAN_UPDATE));
-                scanManager.startCycleScan();
+//                scanManager.startCycleScan();
+                scanManager.startScanNow();
                 invalidateOptionsMenu();
             }
         }

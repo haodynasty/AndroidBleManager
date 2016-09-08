@@ -120,6 +120,7 @@ public class CycledLeScanner {
      */
     public void startScanNow(){
         isStartNow = true;
+        isPauseScan = false;
         scanLeDevice(true);
     }
 
@@ -195,6 +196,7 @@ public class CycledLeScanner {
             if (!isStartNow){
                 return;
             }else{
+                LogUtils.i(TAG, "ScanDevice: Scan right now!");
                 isStartNow = false;
             }
         }

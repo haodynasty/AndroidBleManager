@@ -174,7 +174,7 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        connectManager.closeAll();
+//        connectManager.closeAll();
         connectManager.removeConnectStateListener(listener);
     }
 
@@ -241,7 +241,7 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
         final EditText textView2 = new EditText(this);
         textView2.setInputType(EditorInfo.TYPE_NUMBER_FLAG_DECIMAL);
         textView2.addTextChangedListener(new CustomTextWatcher(textView2));
-        textView2.setHint("input hex value");
+        textView2.setHint("input hex value(e.g. 01,10, 11AB)");
 
         new AlertDialog.Builder(this)
                 .setTitle(R.string.menu_filter)
@@ -249,15 +249,37 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(final DialogInterface dialog, final int id) {
                         writeValue = textView2.getText().toString().trim();
-                        if (writeValue.length() > 0) {
-                            characteristic.setValue(writeValue);
-                            gatt.writeCharacteristic(characteristic);
-                            mTvWriteValue.setText("0x"+writeValue);
+                        writeValue = writeValue.replaceAll(" ", "");
+                        int len = writeValue.length();
+                        if (len > 0 && len%2 == 0) {
+                            byte[] bytes = invertStringToBytes(writeValue);
+                            if (bytes != null){
+                                characteristic.setValue(bytes);
+                                gatt.writeCharacteristic(characteristic);
+                                mTvWriteValue.setText("0x"+writeValue);
+                            }else{
+                                LogUtils.e(TAG, "write value fail");
+                            }
+                        }else {
+                            Toast.makeText(CharacteristicDetailActivity.this, "Input value is invalid, you should input like(hex value): 01, 1101, 0A11", Toast.LENGTH_LONG).show();
                         }
                     }
                 })
                 .setView(textView2)
                 .show();
+    }
+
+    private byte[] invertStringToBytes(String value){
+        int len = value.length()/2;
+        if (len > 0){
+            byte[] bytes = new byte[len];
+            for (int i=0; i<len; i++){
+                Integer val = Integer.valueOf(value.substring(i * 2, i * 2 + 2), 16);
+                bytes[i] = val.byteValue();
+            }
+            return bytes;
+        }
+        return null;
     }
 
     private String getPropertyString(int property){
@@ -350,13 +372,13 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
             final String flag = event.getMsg();
             if (dataArr != null && dataArr.length > 0){
                 if (flag.equals("read")){
-                    mTvReadValue.setText("byte:"+ ByteUtils.byteArrayToHexString(dataArr)+" ,string:"+new String(dataArr));
+                    mTvReadValue.setText("byte:"+ ByteUtils.byteArrayToHexString(dataArr)+" ,string:"+ByteUtils.byteArrayToHexString(dataArr));
                 }else if(flag.equals("write")){
-                    mTvWriteValue.setText("byte:"+ByteUtils.byteArrayToHexString(dataArr)+" ,string:"+ String.valueOf(dataArr));
+                    mTvWriteValue.setText("byte:"+ByteUtils.byteArrayToHexString(dataArr)+" ,string:"+ ByteUtils.byteArrayToHexString(dataArr));
                 }else if(flag.equals("notify")){
                     notifyListAdapter.addHead(ByteUtils.byteArrayToHexString(dataArr));
                 }else{
-                    Toast.makeText(CharacteristicDetailActivity.this, "Fail to operator", Toast.LENGTH_LONG).show();
+                    Toast.makeText(CharacteristicDetailActivity.this, "Fail to operator info", Toast.LENGTH_LONG).show();
                 }
             }else {
                 Toast.makeText(CharacteristicDetailActivity.this, "Chara data is null", Toast.LENGTH_LONG).show();
