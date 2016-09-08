@@ -331,5 +331,5 @@ ConnectConfig.updateReconnectSpaceTime(4000); //间隔重连时间
 - <p><img src="screenshot/ecode.png"/></p>
 
 
-[bintray_svg]: https://api.bintray.com/packages/haodynasty/maven/bluetooth-manager-lib/images/download.svg
-[bintray_url]: https://bintray.com/haodynasty/maven/bluetooth-manager-lib/_latestVersion
+[bintray_svg]: https://api.bintray.com/packages/haodynasty/maven/AndroidBleManager/images/download.svg
+[bintray_url]: https://bintray.com/haodynasty/maven/AndroidBleManager/_latestVersion
