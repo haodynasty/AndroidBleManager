@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.os.Looper;
+import android.os.SystemClock;
 
 import com.blakequ.bluetooth_manager_lib.util.BluetoothUtils;
 import com.blakequ.bluetooth_manager_lib.util.LogUtils;
@@ -358,6 +359,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
                 if (reconnectParamsBean.getNumber() == 1){//same device
                     reconnectParamsBean.updateAddress(address);
                 }else if(reconnectParamsBean.getNumber() == 1000){//disconnect by hand
+                    LogUtils.i(TAG, "reconnect fail! disconnect by hand");
                     reconnectParamsBean.setNumber(1);
                     return;
                 }
@@ -365,6 +367,13 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
         }else{
             reconnectParamsBean = new ReconnectParamsBean(address);
         }
+
+        //计算下一次重连的时间
+        long nextReconnectTime = reconnectParamsBean.getNextReconnectTime() - SystemClock.elapsedRealtime();
+        if (nextReconnectTime < 0){
+            nextReconnectTime = 0;
+        }
+        LogUtils.i(TAG, "next reconnect time " + reconnectParamsBean.toString()+" after:"+nextReconnectTime/1000+"seconds");
 
         getMainLooperHandler().postDelayed(new Runnable() {
             @Override
@@ -405,7 +414,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
                     LogUtils.w(TAG, "Fail to reconnect, the bluetooth is disable!");
                 }
             }
-        }, reconnectParamsBean.getNextReconnectTime());
+        }, nextReconnectTime);
     }
 
     /**
