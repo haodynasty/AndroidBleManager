@@ -57,8 +57,8 @@ public final class BluetoothScanManager {
         mPowerSaver = new BackgroundPowerSaver(context);
         mHandler = new Handler(Looper.getMainLooper());
         cycledLeScanner = new CycledLeScanner(context,
-                BackgroundPowerSaver.DEFAULT_BACKGROUND_SCAN_PERIOD,
-                BackgroundPowerSaver.DEFAULT_BACKGROUND_BETWEEN_SCAN_PERIOD,
+                BackgroundPowerSaver.DEFAULT_FOREGROUND_SCAN_PERIOD,
+                BackgroundPowerSaver.DEFAULT_FOREGROUND_BETWEEN_SCAN_PERIOD,
                 backgroundMode,
                 getScanCallback());
     }
@@ -135,6 +135,9 @@ public final class BluetoothScanManager {
 
     /**
      * start scan device and will stop until invoke {@link #stopCycleScan()}
+     * notice: maybe is not scan right now
+     * @see #startScanNow()
+     * @see #stopCycleScan()
      */
     public void startCycleScan(){
         cycledLeScanner.startScan();
@@ -145,6 +148,14 @@ public final class BluetoothScanManager {
      */
     public void startScanOnce(){
         cycledLeScanner.startOnceScan();
+    }
+
+    /**
+     * start scan right now, is different {@link #startCycleScan()}
+     * @see #startCycleScan()
+     */
+    public void startScanNow(){
+        cycledLeScanner.startScanNow();
     }
 
     /**

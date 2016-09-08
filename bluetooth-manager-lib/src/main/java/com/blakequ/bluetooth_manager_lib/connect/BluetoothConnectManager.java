@@ -71,6 +71,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     public void release() {
         closeAll();
         gattMap.clear();
+        reconnectParamsBean = null;
     }
 
 
@@ -206,6 +207,10 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
                 reconnectDevice(gatt.getDevice().getAddress());
             }
         });
+    }
+
+    public void updateReconnectParams(){
+        reconnectParamsBean = null;
     }
 
     @Override

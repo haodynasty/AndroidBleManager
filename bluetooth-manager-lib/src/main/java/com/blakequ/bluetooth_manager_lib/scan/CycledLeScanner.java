@@ -53,6 +53,7 @@ public class CycledLeScanner {
     private boolean mScanning = false;
     private boolean isPauseScan = false; //pause scan or restart
     private boolean isOnceScan = false; //scan only once
+    private boolean isStartNow = false;
     private final Handler mHandler = new Handler();
     private boolean isSetScanSetting = false;
     private ScanSettingsCompat scanSettings;
@@ -111,6 +112,14 @@ public class CycledLeScanner {
      */
     public void startScan(){
         isPauseScan = false;
+        scanLeDevice(true);
+    }
+
+    /**
+     * start scan device right now
+     */
+    public void startScanNow(){
+        isStartNow = true;
         scanLeDevice(true);
     }
 
@@ -181,9 +190,15 @@ public class CycledLeScanner {
             LogUtils.e(TAG, "ScanDevice: Scanning fail! BluetoothAdapter is null");
             return;
         }
+
         if (deferScanIfNeeded()){
-            return;
+            if (!isStartNow){
+                return;
+            }else{
+                isStartNow = false;
+            }
         }
+
         if (enable) {
             if (mScanning) {
                 LogUtils.d(TAG, "ScanDevice: Scanning is running now !");

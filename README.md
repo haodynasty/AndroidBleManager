@@ -92,7 +92,8 @@ scanManager.addScanFilterCompats(new ScanFilterCompat.Builder().setDeviceName("o
             }
         });
         //start scan
-        scanManager.startCycleScan();
+        scanManager.startCycleScan(); //不会立即开始，可能会延时
+        //scanManager.startScanNow(); //立即开始扫描
 ```
 
 - 暂停扫描
