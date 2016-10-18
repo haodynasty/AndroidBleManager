@@ -1,8 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
 
-def today = new Date().format('yyyyMMdd');
-
 android {
     compileSdkVersion COMPILE_SDK_VERSION
     buildToolsVersion BUILD_TOOLS_VERSION
@@ -11,8 +9,8 @@ android {
         applicationId "com.blakequ.androidblemanager"
         minSdkVersion MIN_SDK_VERSION
         targetSdkVersion TARGET_SDK_VERSION
-        versionCode VERSION_CODE as int
-        versionName VERSION_NAME as String
+        versionCode 1
+        versionName "1.0"
         //设置输出app默认前缀名称
         //project.ext.set("archivesBaseName", "BleManager_v" + versionName + "_"+today);
     }
@@ -37,6 +35,16 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+            //自定义apk安装包名
+            applicationVariants.all { variant ->
+                variant.mergedFlavor.versionCode = gitVersionCode()
+                variant.mergedFlavor.versionName = gitVersionTag()
+                variant.outputs.each { output ->
+                    output.outputFile = new File(
+                            output.outputFile.parent + "/${variant.buildType.name}",
+                            "androidblemanager-${variant.buildType.name}-${variant.versionName}-${releaseTime()}.apk".toLowerCase())
+                }
+            }
         }
     }
 
