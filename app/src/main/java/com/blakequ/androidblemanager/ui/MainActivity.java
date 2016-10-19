@@ -34,7 +34,6 @@ import com.blakequ.androidblemanager.ui.connect.ConnectOneFragment;
 import com.blakequ.androidblemanager.ui.scan.ScanFragment;
 import com.blakequ.androidblemanager.utils.BluetoothUtils;
 import com.blakequ.androidblemanager.utils.Constants;
-import com.blakequ.androidblemanager.utils.FileUtils;
 import com.blakequ.androidblemanager.utils.FirCheckUtils;
 import com.blakequ.androidblemanager.utils.IntentUtils;
 import com.blakequ.androidblemanager.utils.LocationUtils;
@@ -87,7 +86,8 @@ public class MainActivity extends ToolbarActivity
     private boolean filterSwitch;
     private int currentTab = 0;
     private String[] permissionList = {Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN,
-            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
+            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,7 +157,6 @@ public class MainActivity extends ToolbarActivity
     }
 
     private void updateFirAppUpdate(){
-        System.out.println("---"+ FileUtils.isSDCardAvailable());
         new FirCheckUtils(this).startCheckVersion(BuildConfig.FIR_TOKEN, new FirCheckUtils.OnVersionDownloadListener() {
             @Override
             public void onNewVersionGet(final FirCheckUtils.FirVersionBean versionBean) {
@@ -167,9 +166,11 @@ public class MainActivity extends ToolbarActivity
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
-                                    Intent intent = new Intent(getApplicationContext(), AppUpgradeService.class);
-                                    intent.putExtra(AppUpgradeService.EXTRA_DOWLOAD_URL, versionBean.getInstallUrl());
-                                    startService(intent);
+                                    if (checkPermission()){
+                                        Intent intent = new Intent(getApplicationContext(), AppUpgradeService.class);
+                                        intent.putExtra(AppUpgradeService.EXTRA_DOWLOAD_URL, versionBean.getInstallUrl());
+                                        startService(intent);
+                                    }
                                 }
                             })
                             .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
@@ -187,6 +188,8 @@ public class MainActivity extends ToolbarActivity
             }
         });
     }
+
+
 
     private void initScan(){
         mBluetoothUtils = new BluetoothUtils(this);
@@ -622,7 +625,8 @@ public class MainActivity extends ToolbarActivity
      * 这个方法中写正常的逻辑（假设有该权限应该做的事）
      */
     @NeedsPermission({Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.BLUETOOTH,
-            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION})
+            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION
+            ,Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE})
     void showCheckPermissionState(){
         //检查是否开启位置信息（如果没有开启，则无法扫描到任何蓝牙设备在6.0）
         if (!LocationUtils.isGpsProviderEnabled(this)){
@@ -635,7 +639,8 @@ public class MainActivity extends ToolbarActivity
      * @param request
      */
     @OnShowRationale({Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.BLUETOOTH,
-            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION})
+            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE})
     void showRationaleForPermissionState(PermissionRequest request) {
         // NOTE: Show a rationale to explain why the permission is needed, e.g. with a dialog.
         // Call proceed() or cancel() on the provided PermissionRequest to continue or abort
@@ -646,7 +651,8 @@ public class MainActivity extends ToolbarActivity
      * 提示窗口和权限同意窗口--被拒绝时调用
      */
     @OnPermissionDenied({Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.BLUETOOTH,
-            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION})
+            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE})
     void onPermissionStateDenied() {
         // NOTE: Deal with a denied permission, e.g. by showing specific UI
         // or disabling certain functionality
@@ -657,7 +663,8 @@ public class MainActivity extends ToolbarActivity
      * 当完全拒绝了权限打开之后调用
      */
     @OnNeverAskAgain({Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.BLUETOOTH,
-            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION})
+            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE})
     void onPermissionNeverAskAgain() {
         MyAlertDialog.showOpenSettingDialog(this, R.string.open_setting_permission);
     }

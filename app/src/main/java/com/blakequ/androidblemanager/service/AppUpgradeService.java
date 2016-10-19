@@ -174,7 +174,7 @@ public class AppUpgradeService extends Service {
             }
             if (destDir.exists() || destDir.mkdirs()) {
                 destFile = new File(destDir.getPath() + "/" + MD5Encryptor.GetMD5Code(mDownloadUrl));
-                Log.e(TAG, "Download dir "+destDir.getPath());
+                Log.i(TAG, "Download dir " + destFile.getPath());
                 if (destFile.exists() && destFile.isFile() && checkApkFile(destFile.getPath())) {
                     install(destFile);
                     stopSelf();

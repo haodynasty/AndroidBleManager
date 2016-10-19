@@ -85,8 +85,8 @@ public class DownloadUtils {
                 if (responseCode == 200) {
                     is = conn.getInputStream();
                     remoteSize = conn.getContentLength();
-                    String value = conn.getHeaderField("Content-Encoding");
-                    Log.i("DownloadUtils", "Get header Content-Encoding:" + value);
+                    String value = conn.getContentEncoding();
+                    Log.i("DownloadUtils", "Get header Content-Encoding:" + conn.getHeaderField("Content-Encoding")+" "+conn.getContentEncoding());
                     if(value != null && value.equalsIgnoreCase("gzip")) {
                         is = new GZIPInputStream(is);
                     }
