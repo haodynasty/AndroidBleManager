@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -120,7 +121,7 @@ public class AppUpgradeService extends Service {
         if (intent != null) {
             mDownloadUrl = intent.getStringExtra(EXTRA_DOWLOAD_URL);
             if (!StringUtils.isEmpty(mDownloadUrl)){
-                if (FileUtils.isSDCardAvailable()){
+                if (Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)){
                     destDir = new File(FileUtils.getSDCardPath());
                     if (destDir.exists()) {
                         File destFile = new File(destDir.getPath() + "/" + MD5Encryptor.GetMD5Code(mDownloadUrl));

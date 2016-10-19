@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -34,6 +35,7 @@ import com.blakequ.androidblemanager.ui.connect.ConnectOneFragment;
 import com.blakequ.androidblemanager.ui.scan.ScanFragment;
 import com.blakequ.androidblemanager.utils.BluetoothUtils;
 import com.blakequ.androidblemanager.utils.Constants;
+import com.blakequ.androidblemanager.utils.FileUtils;
 import com.blakequ.androidblemanager.utils.FirCheckUtils;
 import com.blakequ.androidblemanager.utils.IntentUtils;
 import com.blakequ.androidblemanager.utils.LocationUtils;
@@ -156,24 +158,25 @@ public class MainActivity extends ToolbarActivity
     }
 
     private void updateFirAppUpdate(){
+        System.out.println("---"+ FileUtils.isSDCardAvailable()+" "+(Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)));
         new FirCheckUtils(this).startCheckVersion(BuildConfig.FIR_TOKEN, new FirCheckUtils.OnVersionDownloadListener() {
             @Override
             public void onNewVersionGet(final FirCheckUtils.FirVersionBean versionBean) {
                 if (versionBean != null && versionBean.isUpdate()) {
                     AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
-                            .setPositiveButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .setNegativeButton(getString(R.string.confirm), new DialogInterface.OnClickListener() {
+                            .setPositiveButton(getString(R.string.confirm), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
                                     Intent intent = new Intent(getApplicationContext(), AppUpgradeService.class);
                                     intent.putExtra(AppUpgradeService.EXTRA_DOWLOAD_URL, versionBean.getInstallUrl());
                                     startService(intent);
+                                }
+                            })
+                            .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
                                 }
                             })
                             .setCancelable(true)

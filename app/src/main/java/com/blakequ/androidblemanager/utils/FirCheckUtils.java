@@ -80,7 +80,7 @@ public class FirCheckUtils {
         private FirVersionBean checkVersionFromFir(String token){
             String baseUrl = "http://fir.im/api/v2/app/version/%s?token=%s";
             String checkUpdateUrl = String.format(baseUrl, mContext.getPackageName(), token);
-            Log.i("FirCheckUtils", "Request debug app update "+checkUpdateUrl);
+            Log.i("FirCheckUtils", "Request debug app update " + checkUpdateUrl);
             try {
                 String firResponse = FirCheckUtils.get(checkUpdateUrl);
                 Log.i("FirCheckUtils", "get request result "+firResponse);
@@ -121,7 +121,10 @@ public class FirCheckUtils {
                             //不需要更新,当前版本高于FIR上的app版本.
                             Log.i("FirCheckUtils", " no need update");
                         }
+                        Log.i("FirCheckUtils", "get parse result "+version);
                         return version;
+                    }else{
+                        Log.e("FirCheckUtils", "Fail to get package info");
                     }
                 }
             } catch (Exception e){
