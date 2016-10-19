@@ -62,6 +62,7 @@ public class DownloadUtils {
                 }
             }
         }
+        Log.i("DownloadUtils", "Start download file "+currentSize+" url:"+urlStr);
 
         HttpURLConnection conn = null;
         try {

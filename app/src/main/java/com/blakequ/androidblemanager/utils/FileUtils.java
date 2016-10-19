@@ -98,13 +98,13 @@ public class FileUtils {
 	 * @return
 	 */
 	public static boolean isSDCardAvailable(){
-		boolean canRead = Environment.getExternalStorageDirectory().canRead();
-		boolean onlyRead = Environment.getExternalStorageState().equals(
-				Environment.MEDIA_MOUNTED_READ_ONLY);
-		boolean unMounted = Environment.getExternalStorageState().equals(
-				Environment.MEDIA_UNMOUNTED);
+//		boolean canRead = Environment.getExternalStorageDirectory().canRead();
+//		boolean onlyRead = Environment.getExternalStorageState().equals(
+//				Environment.MEDIA_MOUNTED_READ_ONLY);
+		boolean mounted = Environment.getExternalStorageState().equals(
+				Environment.MEDIA_MOUNTED);
 
-		return !(!canRead || onlyRead || unMounted);
+		return mounted;
 	}
 	
 	/**

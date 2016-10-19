@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -158,7 +157,7 @@ public class MainActivity extends ToolbarActivity
     }
 
     private void updateFirAppUpdate(){
-        System.out.println("---"+ FileUtils.isSDCardAvailable()+" "+(Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)));
+        System.out.println("---"+ FileUtils.isSDCardAvailable());
         new FirCheckUtils(this).startCheckVersion(BuildConfig.FIR_TOKEN, new FirCheckUtils.OnVersionDownloadListener() {
             @Override
             public void onNewVersionGet(final FirCheckUtils.FirVersionBean versionBean) {
