@@ -1,5 +1,14 @@
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
+//集成fir.im发布
+apply plugin:'im.fir.plugin.gradle'
+
+fir{
+    //必填 上传 fir.im apk 字段，否则无法上传 APP 到 fir.im
+    apiToken getLocalProperty("FIR_TOKEN")
+    //可选 上传fir.im 中显示的changelog
+    changeLog getLocalProperty("UPDATE_LOG")
+}
 
 android {
     compileSdkVersion COMPILE_SDK_VERSION
@@ -11,6 +20,7 @@ android {
         targetSdkVersion TARGET_SDK_VERSION
         versionCode 1
         versionName "1.0"
+        buildConfigField "String", "FIR_TOKEN", getLocalProperty("FIR_TOKEN_STRING")
         //设置输出app默认前缀名称
         //project.ext.set("archivesBaseName", "BleManager_v" + versionName + "_"+today);
     }
@@ -31,6 +41,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            //对齐优化设置为true，否则找不到该task (默认不写也是true)
+            zipAlignEnabled true
+            signingConfig signingConfigs.debug
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

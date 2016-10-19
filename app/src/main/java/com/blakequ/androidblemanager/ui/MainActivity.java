@@ -16,6 +16,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,11 +28,13 @@ import com.blakequ.androidblemanager.R;
 import com.blakequ.androidblemanager.adapter.FragmentPageAdapter;
 import com.blakequ.androidblemanager.containers.BluetoothLeDeviceStore;
 import com.blakequ.androidblemanager.event.UpdateEvent;
+import com.blakequ.androidblemanager.service.AppUpgradeService;
 import com.blakequ.androidblemanager.ui.connect.ConnectManyFragment;
 import com.blakequ.androidblemanager.ui.connect.ConnectOneFragment;
 import com.blakequ.androidblemanager.ui.scan.ScanFragment;
 import com.blakequ.androidblemanager.utils.BluetoothUtils;
 import com.blakequ.androidblemanager.utils.Constants;
+import com.blakequ.androidblemanager.utils.FirCheckUtils;
 import com.blakequ.androidblemanager.utils.IntentUtils;
 import com.blakequ.androidblemanager.utils.LocationUtils;
 import com.blakequ.androidblemanager.utils.PreferencesUtils;
@@ -97,7 +100,7 @@ public class MainActivity extends ToolbarActivity
             public void onClick(View view) {
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
-            EventBus.getDefault().post(new UpdateEvent(UpdateEvent.Type.POP_SHOW, currentTab));
+                EventBus.getDefault().post(new UpdateEvent(UpdateEvent.Type.POP_SHOW, currentTab));
             }
         });
         fab.setVisibility(View.GONE);
@@ -122,6 +125,8 @@ public class MainActivity extends ToolbarActivity
         mViewPager.addOnPageChangeListener(listener);
 
         initScan();
+
+        updateFirAppUpdate();
     }
 
     @Override
@@ -148,6 +153,37 @@ public class MainActivity extends ToolbarActivity
 
     public BluetoothLeDeviceStore getDeviceStore(){
         return mDeviceStore;
+    }
+
+    private void updateFirAppUpdate(){
+        new FirCheckUtils(this).startCheckVersion(BuildConfig.FIR_TOKEN, new FirCheckUtils.OnVersionDownloadListener() {
+            @Override
+            public void onNewVersionGet(final FirCheckUtils.FirVersionBean versionBean) {
+                if (versionBean != null && versionBean.isUpdate()) {
+                    AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
+                            .setPositiveButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setNegativeButton(getString(R.string.confirm), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    Intent intent = new Intent(getApplicationContext(), AppUpgradeService.class);
+                                    intent.putExtra(AppUpgradeService.EXTRA_DOWLOAD_URL, versionBean.getInstallUrl());
+                                    startService(intent);
+                                }
+                            })
+                            .setCancelable(true)
+                            .setTitle("软件更新")
+                            .setMessage("检测到测试版有更新:" + versionBean.getChangeLog() + "，是否立即更新？")
+                            .create();
+                    dialog.show();
+                }
+            }
+        });
     }
 
     private void initScan(){

@@ -9,6 +9,7 @@
     <color name="white">#ffffff</color><!-- 白色 -->
     <color name="black">#000000</color>
     <color name="green">#70A92D</color>
+    <color name="gray">#A5A5A5</color>
 
     <!-- text color -->
     <color name="text_color">#ff434343</color>
