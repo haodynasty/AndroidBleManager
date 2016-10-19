@@ -21,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.blakequ.androidblemanager.BuildConfig;
@@ -114,6 +115,10 @@ public class MainActivity extends ToolbarActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        //这里是获取NavigationView里面view的方法
+        View headerLayout = navigationView.getHeaderView(0);
+        ((TextView)headerLayout.findViewById(R.id.tv_my_version)).setText(BuildConfig.VERSION_NAME);
 
         fragments = new ArrayList<Fragment>();
         fragments.add(new ScanFragment());

@@ -23,15 +23,15 @@
     <string name="no_known_services">No known services</string>
 
     <!-- 版本更新 -->
-    <string name="soft_update_title">发现新版本</string>
-    <string name="soft_update_content">有新的软件版本</string>
-    <string name="soft_update_download">下载</string>
-    <string name="soft_update_next_time">下次再说</string>
-    <string name="soft_download_now">正在下载...</string>
-    <string name="app_upgrade_download_sucess">下载成功</string>
-    <string name="app_upgrade_download_fail">下载失败</string>
-    <string name="app_upgrade_download_over">下载完成</string>
-    <string name="app_upgrade_download_begin">开始下载</string>
+    <string name="soft_update_title">New Version</string>
+    <string name="soft_update_content">Find new app version</string>
+    <string name="soft_update_download">Download</string>
+    <string name="soft_update_next_time">Ignore</string>
+    <string name="soft_download_now">Downloading...</string>
+    <string name="app_upgrade_download_sucess">Success to download</string>
+    <string name="app_upgrade_download_fail">Fail to download</string>
+    <string name="app_upgrade_download_over">Download complete</string>
+    <string name="app_upgrade_download_begin">Start to download</string>
 
     <!-- Formatters -->
     <string name="formatter_meters">%sm</string>
