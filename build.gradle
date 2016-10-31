@@ -52,6 +52,7 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
+
         //添加fir maven源
         maven {
             url "http://maven.bughd.com/public"

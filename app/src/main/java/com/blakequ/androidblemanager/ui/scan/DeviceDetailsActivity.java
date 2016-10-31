@@ -11,6 +11,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.blakequ.androidblemanager.R;
+import com.blakequ.androidblemanager.adapter.viewadapter.MergeAdapter;
 import com.blakequ.androidblemanager.ui.ToolbarActivity;
 import com.blakequ.androidblemanager.utils.TimeFormatter;
 import com.blakequ.bluetooth_manager_lib.device.BeaconType;
@@ -22,7 +23,6 @@ import com.blakequ.bluetooth_manager_lib.device.adrecord.AdRecordUtils;
 import com.blakequ.bluetooth_manager_lib.device.ibeacon.IBeaconManufacturerData;
 import com.blakequ.bluetooth_manager_lib.device.resolvers.CompanyIdentifierResolver;
 import com.blakequ.bluetooth_manager_lib.util.ByteUtils;
-import com.commonsware.cwac.merge.MergeAdapter;
 
 import java.util.Collection;
 import java.util.Locale;

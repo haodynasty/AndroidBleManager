@@ -256,6 +256,15 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         return list;
     }
 
+    /**
+     * is contain device
+     * @param address
+     * @return
+     */
+    public boolean containsDevice(String address){
+        return macMap.containsKey(address);
+    }
+
 
     /**
      * get bluetooth state of connect
