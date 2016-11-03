@@ -259,6 +259,8 @@ connectManager.startSubscribe(gatt);
 - 开始连接
 ```
 startConnect();
+//连接其中的指定设备
+startConnect(String);
 ```
 
 - 资源释放
@@ -292,6 +294,7 @@ if SDK >= 23, 增加权限
 - v1.0(2016/8/25): 完成基本框架（扫描，设备连接）
 - v1.0(2016/8/29): 修复多设备连接bug
 - v1.0(2016/8/30): 增加demo权限检查
+- v2.0(2016/11/3): 完善demo，增加多设备单个设备的单独连接入口
 
 # 6. TODO
 
