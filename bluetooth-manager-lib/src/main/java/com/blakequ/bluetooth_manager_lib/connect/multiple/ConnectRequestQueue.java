@@ -116,6 +116,36 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     }
 
     /**
+     * start connect device(will trigger reconnect)
+     * @param macAddress
+     */
+    public void startConnect(String macAddress){
+        if (macAddress != null && macAddress.length() > 0){
+            if (macMap.containsKey(macAddress)){
+                ConnectState state = macMap.get(macAddress);
+                //如果是未连接状态，则开启重连，重置重连次数，并立即连接
+                if (macMap.get(macAddress) == ConnectState.NORMAL){
+                    ReconnectParamsBean bean;
+                    if (!reconnectMap.containsKey(macAddress)){
+                        bean = new ReconnectParamsBean(macAddress);
+                        reconnectMap.put(macAddress, bean);
+                    }else{
+                        bean = reconnectMap.get(macAddress);
+                        bean.updateAddress(macAddress);
+                    }
+                    startReconnectTask();
+                }else{
+                    LogUtils.i(TAG, "Device is " + state + " state");
+                }
+            }else{
+                LogUtils.e(TAG, "Fail to connect device, device can not found in queue, you must invoke addDeviceToQueue(Stirng)");
+            }
+        }else{
+            LogUtils.e(TAG, "Fail to connect device, mac address is null");
+        }
+    }
+
+    /**
      * connect bluetooth device one by one
      * @return the next connect device
      */
@@ -425,6 +455,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
                     LogUtils.w(TAG, "Fail to reconnect device! "+address+" state is "+state);
                 }
             }else {
+                closeAll();
                 LogUtils.w(TAG, "Fail to reconnect device! Bluetooth is not enable!");
             }
         }else{
@@ -434,7 +465,13 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     }
 
 
-    public boolean connect(final String address) {
+    /**
+     * You should invoke {@link #startConnect()} to begin to connect device. Not recommended for direct use this method
+     * @see #startConnect()
+     * @param address
+     * @return
+     */
+    protected boolean connect(final String address) {
         BluetoothAdapter mAdapter = mBluetoothUtils.getBluetoothAdapter();
         if (mAdapter == null || address == null) {
             LogUtils.e(TAG, "BluetoothAdapter not initialized or unspecified address "+address);
@@ -444,7 +481,8 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
 
         if (!mBluetoothUtils.isBluetoothIsEnable()){
             LogUtils.e(TAG, "bluetooth is not enable.");
-            updateConnectStateListener(address, ConnectState.NORMAL);
+            closeAll();
+//            updateConnectStateListener(address, ConnectState.NORMAL);
             return false;
         }
 

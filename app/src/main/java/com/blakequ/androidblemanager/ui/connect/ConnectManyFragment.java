@@ -8,6 +8,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -66,6 +67,15 @@ public class ConnectManyFragment extends Fragment{
         rootView = inflater.inflate(R.layout.frament_connect_two, null);
         ButterKnife.bind(this, rootView);
         mListView.setAdapter(mAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                BluetoothLeDevice device = (BluetoothLeDevice) mAdapter.getItem(position);
+                if (device != null){
+                    multiConnectManager.startConnect(device.getAddress());
+                }
+            }
+        });
         mTvMax.setText(multiConnectManager.getMaxLen() + "");
         return rootView;
     }
@@ -79,17 +89,16 @@ public class ConnectManyFragment extends Fragment{
             @Override
             public void onConnectStateChanged(String address, ConnectState state) {
                 mAdapter.updateState(address, state);
-                mTvCurrentNum.setText(multiConnectManager.getConnectedDevice().size()+"");
-                switch (state){
+                mTvCurrentNum.setText(multiConnectManager.getConnectedDevice().size() + "");
+                switch (state) {
                     case CONNECTING:
                         break;
                     case CONNECTED:
+                    case NORMAL:
                         MainActivity activity = (MainActivity) getActivity();
                         if (activity != null) {
                             activity.invalidateOptionsMenu();
                         }
-                        break;
-                    case NORMAL:
                         break;
                 }
             }

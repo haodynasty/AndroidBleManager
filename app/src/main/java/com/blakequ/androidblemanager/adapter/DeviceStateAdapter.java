@@ -95,7 +95,7 @@ public class DeviceStateAdapter extends BaseArrayListAdapter<BluetoothLeDevice>{
     private Comparator<BluetoothLeDevice> comparator = new Comparator<BluetoothLeDevice>() {
         @Override
         public int compare(BluetoothLeDevice lhs, BluetoothLeDevice rhs) {
-            return lhs.getAddress().compareTo(rhs.getAddress());
+            return rhs.getRssi()-lhs.getRssi();
         }
     };
 
@@ -121,14 +121,14 @@ public class DeviceStateAdapter extends BaseArrayListAdapter<BluetoothLeDevice>{
             mHolder.mTvName.setText(name);
             mHolder.mTvAddress.setText(entity.getAddress());
             ConnectState state = map.get(entity.getAddress());
-            mHolder.mTvState.setTextColor(mContext.getColor(R.color.text_content));
+            mHolder.mTvState.setTextColor(mContext.getResources().getColor(R.color.text_content));
             if (state == ConnectState.NORMAL){
                 mHolder.mTvState.setText("Disconnect");
             }else if(state == ConnectState.CONNECTING){
                 mHolder.mTvState.setText("Connecting");
             }else{
                 mHolder.mTvState.setText("Connected");
-                mHolder.mTvState.setTextColor(mContext.getColor(R.color.red));
+                mHolder.mTvState.setTextColor(mContext.getResources().getColor(R.color.red));
             }
         }
     }
