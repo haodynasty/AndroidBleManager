@@ -61,7 +61,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
 
     public BluetoothConnectManager(Context context) {
         super(context);
-        subscribeList = new ArrayList<BluetoothSubScribeData>();
+        subscribeList = Collections.synchronizedList(new ArrayList<BluetoothSubScribeData>());
         mBluetoothUtils = BluetoothUtils.getInstance(context);
         bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         gattMap = new ConcurrentHashMap<String, BluetoothGatt>(); //会有并发的断开和连接，故而必须使用并发ConcurrentHashMap才行，否则会有ConcurrentModificationException

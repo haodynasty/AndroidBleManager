@@ -45,6 +45,11 @@ def gitVersionTag() {
     return version
 }
 
+//获取最新的提交日志
+def gitLogFirstCommit() {
+    def cmd = 'git log -1 --pretty=update:"%s"' //%cd是日期，%an是作者
+    cmd.execute().text.trim()
+}
 
 buildscript {
     repositories {

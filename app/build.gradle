@@ -7,7 +7,7 @@ fir{
     //必填 上传 fir.im apk 字段，否则无法上传 APP 到 fir.im
     apiToken getLocalProperty("FIR_TOKEN")
     //可选 上传fir.im 中显示的changelog
-    changeLog getLocalProperty("UPDATE_LOG")
+    changeLog gitLogFirstCommit()//getLocalProperty("UPDATE_LOG")
 }
 
 android {
