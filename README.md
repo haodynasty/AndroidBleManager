@@ -59,7 +59,7 @@ maven
 ## 3.1 扫描
 - 获取扫描管理器
 ```
-BluetoothScanManager scanManager = BluetoothScanManager.getInstance(context);
+BluetoothScanManager scanManager = BleManager.getScanManager(context);
 ```
 
 - 开始扫描
@@ -121,7 +121,7 @@ setAPI21ScanningDisabled(false); //禁止使用新的扫描方式
 ## 3.2 单设备连接
 - 获取连接管理器
 ```
-BluetoothConnectManager connectManager = BluetoothConnectManager.getInstance(context);
+BluetoothConnectManager connectManager = BleManager.getConnectManager(context);
 ```
 - 连接状态监听
 ```
@@ -202,7 +202,7 @@ scanManager.release();
 ## 3.3 多设备连接
 - 获取多设备连接管理器
 ```
-MultiConnectManager multiConnectManager = MultiConnectManager.getInstance(context);
+MultiConnectManager multiConnectManager = BleManager.getMultiConnectManager(context);
 ```
 
 - 添加状态监听
