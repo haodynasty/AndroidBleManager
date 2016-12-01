@@ -46,11 +46,11 @@ public class FirCheckUtils {
      * @param token fir的API token
      * @param onVersionDownloadListener
      */
-    public void startCheckVersion(String token, OnVersionDownloadListener onVersionDownloadListener){
+    public void startCheckVersion(String appId, String token, OnVersionDownloadListener onVersionDownloadListener){
         if(Build.VERSION.SDK_INT >= 11) {
-            (new CheckTask(mContext)).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, token);
+            (new CheckTask(mContext)).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, appId, token);
         } else {
-            (new CheckTask(mContext)).execute(token);
+            (new CheckTask(mContext)).execute(appId, token);
         }
         this.onVersionDownloadListener = onVersionDownloadListener;
     }
@@ -67,7 +67,7 @@ public class FirCheckUtils {
 
         @Override
         protected FirVersionBean doInBackground(String... params) {
-            return checkVersionFromFir(params[0]);
+            return checkVersionFromFir(params[0], params[1]);
         }
 
         @Override
@@ -77,9 +77,9 @@ public class FirCheckUtils {
             }
         }
 
-        private FirVersionBean checkVersionFromFir(String token){
-            String baseUrl = "http://fir.im/api/v2/app/version/%s?token=%s";
-            String checkUpdateUrl = String.format(baseUrl, mContext.getPackageName(), token);
+        private FirVersionBean checkVersionFromFir(String appId, String token){
+            String baseUrl = "http://api.fir.im/apps/latest/%s?token=%s";
+            String checkUpdateUrl = String.format(baseUrl, appId, token);
             Log.i("FirCheckUtils", "Request debug app update " + checkUpdateUrl);
             try {
                 String firResponse = FirCheckUtils.get(checkUpdateUrl);
@@ -96,6 +96,10 @@ public class FirCheckUtils {
                     version.setUpdateUrl(versionJsonObj.getString("update_url"));
                     version.setUpdateTime(versionJsonObj.getLong("updated_at"));
                     version.setIsUpdate(false);
+                    JSONObject sizeObj = versionJsonObj.getJSONObject("binary");
+                    if (sizeObj != null){
+                        version.setSize(sizeObj.getInt("fsize"));
+                    }
 
                     //FIR上当前的versionCode
                     int firVersionCode = version.getVersionCode();
@@ -121,7 +125,7 @@ public class FirCheckUtils {
                             //不需要更新,当前版本高于FIR上的app版本.
                             Log.i("FirCheckUtils", " no need update");
                         }
-                        Log.i("FirCheckUtils", "get parse result "+version);
+                        Log.i("FirCheckUtils", "get parse result currentName"+currentVersionName+" code"+currentVersionCode+" =="+version);
                         return version;
                     }else{
                         Log.e("FirCheckUtils", "Fail to get package info");
@@ -223,7 +227,7 @@ public class FirCheckUtils {
         return state;
     }
 
-    public static class FirVersionBean{
+    public static class FirVersionBean {
         private String name;
         private int versionCode;
         private String versionName;
@@ -232,6 +236,7 @@ public class FirCheckUtils {
         private String updateUrl;
         private String installUrl;
         private boolean isUpdate;
+        private int size;
 
         public String getChangeLog() {
             return changeLog;
@@ -262,7 +267,7 @@ public class FirCheckUtils {
         }
 
         public void setUpdateTime(long updateTime) {
-            this.updateTime = updateTime*1000;
+            this.updateTime = updateTime * 1000;
         }
 
         public String getUpdateUrl() {
@@ -297,6 +302,14 @@ public class FirCheckUtils {
             this.isUpdate = isUpdate;
         }
 
+        public int getSize() {
+            return size;
+        }
+
+        public void setSize(int size) {
+            this.size = size;
+        }
+
         @Override
         public String toString() {
             return "FirVersionBean{" +
@@ -308,6 +321,7 @@ public class FirCheckUtils {
                     ", updateTime=" + updateTime +
                     ", updateUrl='" + updateUrl + '\'' +
                     ", installUrl='" + installUrl + '\'' +
+                    ", size='" + size + '\'' +
                     '}';
         }
     }

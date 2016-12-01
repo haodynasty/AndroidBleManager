@@ -19,6 +19,7 @@ import com.blakequ.androidblemanager.containers.BluetoothLeDeviceStore;
 import com.blakequ.androidblemanager.event.UpdateEvent;
 import com.blakequ.androidblemanager.ui.MainActivity;
 import com.blakequ.androidblemanager.ui.scan.DeviceControlActivity;
+import com.blakequ.bluetooth_manager_lib.BleManager;
 import com.blakequ.bluetooth_manager_lib.connect.BluetoothConnectManager;
 import com.blakequ.bluetooth_manager_lib.connect.ConnectState;
 import com.blakequ.bluetooth_manager_lib.connect.ConnectStateListener;
@@ -119,6 +120,7 @@ public class ConnectOneFragment extends Fragment{
                 BluetoothLeDevice device = (BluetoothLeDevice) mAdapter.getItem(position);
                 if (device != null){
 //                    connectManager.connect(device.getAddress());
+                    BleManager.getScanManager(getActivity()).stopCycleScan();
                     final Intent intent = new Intent(getActivity(), DeviceControlActivity.class);
                     intent.putExtra(DeviceControlActivity.EXTRA_DEVICE, device);
                     startActivity(intent);

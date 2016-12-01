@@ -28,12 +28,14 @@ import java.util.List;
  * last modify author : <br>
  * version : 1.0 <br>
  * description: 扫描管理器，要实现的功能
- * 1. 扫描封装
- * 2. 扫描管理
- * 3. 支持ibeacon扫描解析
- * 4. 持续扫描省电管理（BackgroundPowerSaver)
- * 5. 循环扫描暂停与开始（当连接时可以让扫描暂停，一旦断开就重启扫描）
- * 6. 当前扫描状态
+ * <ol>
+ * <li>扫描封装</li>
+ * <li>扫描管理</li>
+ * <li>支持ibeacon扫描解析</li>
+ * <li>持续扫描省电管理（BackgroundPowerSaver)</li>
+ * <li>循环扫描暂停与开始（当连接时可以让扫描暂停，一旦断开就重启扫描）</li>
+ * <li>当前扫描状态</li>
+ * </ol>
  * 注意：回调不在主线程中执行，需要自己在主线程中处理回调（{@link com.blakequ.bluetooth_manager_lib.scan.ScanOverListener} and {@link com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanCallbackCompat}）,
  * 尤其是想在扫描结束之后直接执行连接蓝牙或断开蓝牙设备，都需要在主线程执行，否则在某些机型如三星会出现异常。
  */
@@ -42,7 +44,6 @@ public final class BluetoothScanManager {
     private static BluetoothScanManager INSTANCE = null;
 
     private static final String TAG = "BluetoothScanManager";
-    private static boolean isAPI21ScanningDisabled = false;
     private Context mContext;
     //is background mode or not
     private boolean backgroundMode = false;
@@ -91,11 +92,6 @@ public final class BluetoothScanManager {
     }
 
     /**
-     * you can invoke this method and set scan time and waitting time between scan cycle,
-     * @see BackgroundPowerSaver#setForegroundScanPeriod(long p)
-     * @see BackgroundPowerSaver#setForegroundBetweenScanPeriod(long p)
-     * @see BackgroundPowerSaver#setBackgroundScanPeriod(long p)
-     * @see BackgroundPowerSaver#setBackgroundBetweenScanPeriod(long p)
      * @return
      */
     public BackgroundPowerSaver getPowerSaver(){
@@ -171,19 +167,12 @@ public final class BluetoothScanManager {
     }
 
     /**
-     * new scan is disabled(API >= 21)
+     * default using new scan method if API >= 21
      * @return
      */
+    @Deprecated
     public static boolean isAPI21ScanningDisabled(){
-        return isAPI21ScanningDisabled;
-    }
-
-    /**
-     * set scan method(API>=21) disabled or not
-     * @param disabled
-     */
-    public static void setAPI21ScanningDisabled(boolean disabled){
-        isAPI21ScanningDisabled = disabled;
+        return false;
     }
 
     /**
@@ -196,14 +185,6 @@ public final class BluetoothScanManager {
      * BackgroundScanPeriod and the BackgroundBetweenScanPeriod.
      *
      * @param backgroundMode true indicates the app is in the background
-     * @see BackgroundPowerSaver#DEFAULT_FOREGROUND_SCAN_PERIOD
-     * @see BackgroundPowerSaver#DEFAULT_FOREGROUND_BETWEEN_SCAN_PERIOD;
-     * @see BackgroundPowerSaver#DEFAULT_BACKGROUND_SCAN_PERIOD;
-     * @see BackgroundPowerSaver#DEFAULT_BACKGROUND_BETWEEN_SCAN_PERIOD;
-     * @see BackgroundPowerSaver#setForegroundScanPeriod(long p)
-     * @see BackgroundPowerSaver#setForegroundBetweenScanPeriod(long p)
-     * @see BackgroundPowerSaver#setBackgroundScanPeriod(long p)
-     * @see BackgroundPowerSaver#setBackgroundBetweenScanPeriod(long p)
      */
     public void setBackgroundMode(boolean backgroundMode) {
         if (android.os.Build.VERSION.SDK_INT < 18) {

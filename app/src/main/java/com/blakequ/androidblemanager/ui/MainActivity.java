@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.IntegerRes;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -42,7 +43,9 @@ import com.blakequ.androidblemanager.utils.PreferencesUtils;
 import com.blakequ.androidblemanager.widget.MyAlertDialog;
 import com.blakequ.androidblemanager.widget.ScrollViewPager;
 import com.blakequ.bluetooth_manager_lib.BleManager;
+import com.blakequ.bluetooth_manager_lib.BleParamsOptions;
 import com.blakequ.bluetooth_manager_lib.connect.BluetoothConnectManager;
+import com.blakequ.bluetooth_manager_lib.connect.ConnectConfig;
 import com.blakequ.bluetooth_manager_lib.connect.ConnectState;
 import com.blakequ.bluetooth_manager_lib.connect.multiple.MultiConnectManager;
 import com.blakequ.bluetooth_manager_lib.scan.BluetoothScanManager;
@@ -95,7 +98,18 @@ public class MainActivity extends ToolbarActivity
         super.onCreate(savedInstanceState);
         EventBus.getDefault().register(this);
         ButterKnife.bind(this);
-        BleManager.getInstance().setLogDebugMode(BuildConfig.DEBUG);
+        BleManager.setBleParamsOptions(new BleParamsOptions.Builder()
+                .setBackgroundBetweenScanPeriod(5 * 60 * 1000)
+                .setBackgroundScanPeriod(10000)
+                .setForegroundBetweenScanPeriod(5000)
+                .setForegroundScanPeriod(10000)
+                .setDebugMode(BuildConfig.DEBUG)
+                .setMaxConnectDeviceNum(5)
+                .setReconnectBaseSpaceTime(8000)
+                .setReconnectMaxTimes(4)
+                .setReconnectStrategy(ConnectConfig.RECONNECT_LINE_EXPONENT)
+                .setReconnectedLineToExponentTimes(5)
+                .build());
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -162,7 +176,7 @@ public class MainActivity extends ToolbarActivity
     }
 
     private void updateFirAppUpdate(){
-        new FirCheckUtils(this).startCheckVersion(BuildConfig.FIR_TOKEN, new FirCheckUtils.OnVersionDownloadListener() {
+        new FirCheckUtils(this).startCheckVersion(BuildConfig.FIR_ID, BuildConfig.FIR_TOKEN, new FirCheckUtils.OnVersionDownloadListener() {
             @Override
             public void onNewVersionGet(final FirCheckUtils.FirVersionBean versionBean) {
                 if (versionBean != null && versionBean.isUpdate()) {

@@ -17,19 +17,12 @@ package com.blakequ.bluetooth_manager_lib.connect;
  * description:
  */
 public class ConnectConfig {
-    public static long reconnectTime = 4000; //断开后等待尝试重新连接的时间ms
-    public static int reconnectedNum = 4; //断开后重新快速重连的次数
     public static int maxConnectDeviceNum = 5;//一次最大连接个数
 
-    public static void updateMaxConnectNumber(int number){
-        maxConnectDeviceNum = number;
-    }
-
-    public static void updateReconnectNumber(int number){
-        reconnectedNum = number;
-    }
-
-    public static void updateReconnectSpaceTime(long spaceTime){
-        reconnectTime = spaceTime;
-    }
+    /**线性间隔重连*/
+    public static final int RECONNECT_LINEAR = 1;
+    /**指数间隔重新*/
+    public static final int RECONNECT_EXPONENT = 2;
+    /**先线性后指数重新*/
+    public static final int RECONNECT_LINE_EXPONENT = 3;
 }

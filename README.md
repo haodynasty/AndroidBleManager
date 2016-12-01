@@ -280,6 +280,36 @@ getAllConnectedDevice();
 getAllConnectingDevice();
 ```
 
+## 3.4 个性化扫描和连接配置
+1. 可设置参数如下：
+```
+boolean isDebugMode = false; //是否为debug模式，建议使用BuildConfig.DEBUG设置，如果为true则打印日志
+long foregroundScanPeriod = 10000; //在前台时（可见扫描界面）扫描持续时间
+long foregroundBetweenScanPeriod = 5000; //在前台时（可见扫描界面）扫描间隔暂停时间，我们扫描的方式是间隔扫描
+long backgroundScanPeriod = 10000; //在后台时（不可见扫描界面）扫描持续时间
+long backgroundBetweenScanPeriod = 5 * 60 * 1000; //在后台时（不可见扫描界面）扫描间隔暂停时间，我们扫描的方式是间隔扫描
+int maxConnectDeviceNum = 5;//一次最多连接设备个数
+int reconnectStrategy = 3; //如果连接自动断开之后的重连策略（ConnectConfig.RECONNECT_LINEAR，ConnectConfig.RECONNECT_EXPONENT，ConnectConfig.RECONNECT_LINE_EXPONENT）
+int reconnectMaxTimes = Integer.MAX_VALUE; //最大重连次数，默认可一直进行重连
+long reconnectBaseSpaceTime = 8000; //重连基础时间间隔ms，重连的时间间隔
+int reconnectedLineToExponentTimes = 5; //快速重连的次数(线性到指数，只在reconnectStrategy=ConnectConfig.RECONNECT_LINE_EXPONENT时有效)
+```
+2. 使用方法
+```
+BleManager.setBleParamsOptions(new BleParamsOptions.Builder()
+                .setBackgroundBetweenScanPeriod(5 * 60 * 1000)
+                .setBackgroundScanPeriod(10000)
+                .setForegroundBetweenScanPeriod(5000)
+                .setForegroundScanPeriod(10000)
+                .setDebugMode(BuildConfig.DEBUG)
+                .setMaxConnectDeviceNum(5)
+                .setReconnectBaseSpaceTime(8000)
+                .setReconnectMaxTimes(Integer.MAX_VALUE)
+                .setReconnectStrategy(ConnectConfig.RECONNECT_LINE_EXPONENT)
+                .setReconnectedLineToExponentTimes(5)
+                .build());
+```
+
 # 4. 权限
 使用时需要如下权限
 * `android.permission.BLUETOOTH`
@@ -295,6 +325,7 @@ if SDK >= 23, 增加权限
 - v1.0(2016/8/29): 修复多设备连接bug
 - v1.0(2016/8/30): 增加demo权限检查
 - v2.0(2016/11/3): 完善demo，增加多设备单个设备的单独连接入口
+- v2.1(2016/12/1): 增加扫描和连接的个性化配置
 
 # 6. TODO
 

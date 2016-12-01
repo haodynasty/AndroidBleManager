@@ -6,6 +6,8 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 
+import com.blakequ.bluetooth_manager_lib.BleManager;
+import com.blakequ.bluetooth_manager_lib.BleParamsOptions;
 import com.blakequ.bluetooth_manager_lib.util.LogUtils;
 
 
@@ -77,6 +79,7 @@ public class BackgroundPowerSaver implements Application.ActivityLifecycleCallba
      *
      * @param p
      */
+    @Deprecated
     public void setForegroundScanPeriod(long p) {
         foregroundScanPeriod = p;
     }
@@ -89,6 +92,7 @@ public class BackgroundPowerSaver implements Application.ActivityLifecycleCallba
      *
      * @param p
      */
+    @Deprecated
     public void setForegroundBetweenScanPeriod(long p) {
         foregroundBetweenScanPeriod = p;
     }
@@ -101,6 +105,7 @@ public class BackgroundPowerSaver implements Application.ActivityLifecycleCallba
      *
      * @param p
      */
+    @Deprecated
     public void setBackgroundScanPeriod(long p) {
         backgroundScanPeriod = p;
     }
@@ -110,23 +115,42 @@ public class BackgroundPowerSaver implements Application.ActivityLifecycleCallba
      *
      * @param p
      */
+    @Deprecated
     public void setBackgroundBetweenScanPeriod(long p) {
         backgroundBetweenScanPeriod = p;
     }
 
     public long getScanPeriod() {
+        BleParamsOptions options = BleManager.getBleParamsOptions();
         if (BluetoothScanManager.getInstance(mContext).isBackgroundMode()) {
-            return backgroundScanPeriod;
+            if (options != null){
+                return options.getBackgroundScanPeriod();
+            }else {
+                return backgroundScanPeriod;
+            }
         } else {
-            return foregroundScanPeriod;
+            if (options != null){
+                return options.getForegroundScanPeriod();
+            }else {
+                return foregroundScanPeriod;
+            }
         }
     }
 
     public long getBetweenScanPeriod() {
+        BleParamsOptions options = BleManager.getBleParamsOptions();
         if (BluetoothScanManager.getInstance(mContext).isBackgroundMode()) {
-            return backgroundBetweenScanPeriod;
+            if (options != null){
+                return options.getBackgroundBetweenScanPeriod();
+            }else {
+                return backgroundBetweenScanPeriod;
+            }
         } else {
-            return foregroundBetweenScanPeriod;
+            if (options != null){
+                return options.getForegroundBetweenScanPeriod();
+            }else {
+                return foregroundBetweenScanPeriod;
+            }
         }
     }
 

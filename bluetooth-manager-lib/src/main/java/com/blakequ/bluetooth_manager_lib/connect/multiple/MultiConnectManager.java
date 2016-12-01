@@ -15,6 +15,8 @@ import com.blakequ.bluetooth_manager_lib.util.LogUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
@@ -46,13 +48,13 @@ public final class MultiConnectManager extends ConnectRequestQueue {
     private BluetoothManager bluetoothManager;
     private static String serviceUUID;
     private BluetoothGattCallback mBluetoothGattCallback;
-    private final List<BluetoothSubScribeData> subscribeList;
+    private final Queue<BluetoothSubScribeData> subscribeQueue;
     private static Object obj = new Object();
 
     private MultiConnectManager(Context context){
-        super(context, ConnectConfig.maxConnectDeviceNum);
+        super(context);
         bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
-        subscribeList = new ArrayList<>();
+        subscribeQueue = new ConcurrentLinkedQueue<BluetoothSubScribeData>();
     }
 
     public static MultiConnectManager getInstance(Context context){
@@ -96,7 +98,7 @@ public final class MultiConnectManager extends ConnectRequestQueue {
      * @param data
      */
     public void addBluetoothSubscribeData(BluetoothSubScribeData data){
-        subscribeList.add(data);
+        subscribeQueue.add(data);
     }
 
     /**
@@ -119,11 +121,12 @@ public final class MultiConnectManager extends ConnectRequestQueue {
     }
 
     @Override
-    protected List<BluetoothSubScribeData> getSubscribeDataList() {
-        return subscribeList;
+    protected Queue<BluetoothSubScribeData> getSubscribeDataQueue() {
+        return subscribeQueue;
     }
 
+    @Deprecated
     public void setMaxConnectDeviceNum(int number){
-        setMaxLen(number);
+        ConnectConfig.maxConnectDeviceNum = number;
     }
 }

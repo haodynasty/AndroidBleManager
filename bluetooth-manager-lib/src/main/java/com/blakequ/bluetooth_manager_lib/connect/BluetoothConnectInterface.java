@@ -17,6 +17,7 @@ import com.blakequ.bluetooth_manager_lib.util.LogUtils;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Queue;
 import java.util.UUID;
 
 /**
@@ -70,7 +71,7 @@ public abstract class BluetoothConnectInterface {
      * get the list of subscribe
      * @return
      */
-    protected abstract List<BluetoothSubScribeData> getSubscribeDataList();
+    protected abstract Queue<BluetoothSubScribeData> getSubscribeDataQueue();
 
     /**
      * invoke when bluetooth disconnect
@@ -272,14 +273,14 @@ public abstract class BluetoothConnectInterface {
         }
 
         //check subscribe list
-        if (isEmpty(getSubscribeDataList())){
+        if (getSubscribeDataQueue() == null && getSubscribeDataQueue().size() > 0){
             LogUtils.e(TAG, "Subscribe BLE data is null, you must invoke addBluetoothSubscribeData to add data");
             return;
         }
 
         BluetoothGattService gattService = mBluetoothGatt.getService(UUID.fromString(getServiceUUID()));
         if (gattService != null){
-            for (BluetoothSubScribeData data:getSubscribeDataList()){
+            for (BluetoothSubScribeData data:getSubscribeDataQueue()){
                 final BluetoothGattCharacteristic characteristic = gattService.getCharacteristic(data.getCharacteristicUUID());
                 if (characteristic != null){
                     switch (data.getOperatorType()){

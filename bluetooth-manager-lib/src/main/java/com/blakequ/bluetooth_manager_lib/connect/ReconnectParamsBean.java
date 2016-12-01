@@ -2,6 +2,10 @@ package com.blakequ.bluetooth_manager_lib.connect;
 
 import android.os.SystemClock;
 
+import com.blakequ.bluetooth_manager_lib.BleManager;
+import com.blakequ.bluetooth_manager_lib.BleParamsOptions;
+import com.blakequ.bluetooth_manager_lib.util.LogUtils;
+
 /**
  * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
  * <p/>
@@ -23,7 +27,6 @@ public class ReconnectParamsBean {
     private int number;//reconnect times number
     private long nextReconnectTime;//next reconnect time
     private long startDisconnectTime;
-    private static long BASE_SPACE_TIME = ConnectConfig.reconnectTime; //space time to reconnect
 
     public ReconnectParamsBean(String address) {
         this.address = address;
@@ -42,14 +45,32 @@ public class ReconnectParamsBean {
     }
 
     /**
-     * 如果重连的次数超过4次，则下次重连时间呈指数增长
+     * get next reconnect time
      * @return
      */
     public long getNextReconnectTime() {
-        if (number <= ConnectConfig.reconnectedNum){
-            nextReconnectTime = startDisconnectTime + BASE_SPACE_TIME*number;
-        }else {
-            nextReconnectTime = (long) (startDisconnectTime + BASE_SPACE_TIME* Math.pow(2, number));
+        BleParamsOptions options = BleManager.getBleParamsOptions();
+        switch (options.getReconnectStrategy()){
+            case ConnectConfig.RECONNECT_EXPONENT:
+                nextReconnectTime = (long) (startDisconnectTime + options.getReconnectBaseSpaceTime() * Math.pow(2, number));
+                break;
+            case ConnectConfig.RECONNECT_LINE_EXPONENT:
+                if (number <= options.getReconnectedLineToExponentTimes()){
+                    nextReconnectTime = startDisconnectTime + options.getReconnectBaseSpaceTime()*number;
+                }else {
+                    nextReconnectTime = (long) (startDisconnectTime + options.getReconnectBaseSpaceTime() * Math.pow(2, number));
+                }
+                break;
+            case ConnectConfig.RECONNECT_LINEAR:
+                nextReconnectTime = startDisconnectTime + options.getReconnectBaseSpaceTime()*number;
+                break;
+        }
+
+        //max reconnect times, not reconnect
+        if (number >= options.getReconnectMaxTimes()){
+            LogUtils.d("ReconnectParamsBean", "reconnect number="+number+" more than max times "+options.getReconnectMaxTimes());
+            //将时间设置非常大
+            nextReconnectTime = SystemClock.elapsedRealtime() + 10*24*60*60*1000;
         }
         return nextReconnectTime;
     }

@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 
 import com.blakequ.bluetooth_manager_lib.connect.BluetoothConnectManager;
+import com.blakequ.bluetooth_manager_lib.connect.ConnectConfig;
 import com.blakequ.bluetooth_manager_lib.connect.multiple.MultiConnectManager;
 import com.blakequ.bluetooth_manager_lib.scan.BluetoothScanManager;
 import com.blakequ.bluetooth_manager_lib.util.LogUtils;
@@ -29,24 +30,27 @@ import com.blakequ.bluetooth_manager_lib.util.LogUtils;
  */
 @TargetApi(18)
 public final class BleManager {
-    private BluetoothConnectManager singleConnectManager;
-    private BluetoothScanManager scanManager;
-    private MultiConnectManager multiConnectManager;
-    private static Object obj = new Object();
-
-    private static BleManager INSTANCE = null;
+    private static BleParamsOptions configOptions;
     private BleManager(){
     }
 
-    public static BleManager getInstance(){
-        if (INSTANCE == null){
-            synchronized (obj){
-                if (INSTANCE == null){
-                    INSTANCE = new BleManager();
-                }
-            }
+    public static BleParamsOptions getBleParamsOptions(){
+        if (configOptions == null){
+            configOptions = BleParamsOptions.createDefault();
         }
-        return INSTANCE;
+        return configOptions;
+    }
+
+    /**
+     * set config of ble connect and scan
+     * @param options
+     */
+    public static void setBleParamsOptions(@NonNull BleParamsOptions options){
+        if (options != null){
+            configOptions = options;
+            ConnectConfig.maxConnectDeviceNum = options.getMaxConnectDeviceNum();
+            LogUtils.setDebugLog(options.isDebugMode());
+        }
     }
 
     /**
@@ -55,7 +59,7 @@ public final class BleManager {
      * @return
      * @see #getMultiConnectManager(Context)
      */
-    public BluetoothConnectManager getConnectManager(@NonNull Context context){
+    public static BluetoothConnectManager getConnectManager(@NonNull Context context){
         return BluetoothConnectManager.getInstance(context);
     }
 
@@ -64,7 +68,7 @@ public final class BleManager {
      * @param context
      * @return
      */
-    public BluetoothScanManager getScanManager(@NonNull Context context){
+    public static BluetoothScanManager getScanManager(@NonNull Context context){
         return BluetoothScanManager.getInstance(context);
     }
 
@@ -74,7 +78,7 @@ public final class BleManager {
      * @return
      * @see #getConnectManager(Context)
      */
-    public MultiConnectManager getMultiConnectManager(@NonNull Context context){
+    public static MultiConnectManager getMultiConnectManager(@NonNull Context context){
         return MultiConnectManager.getInstance(context);
     }
 
@@ -107,9 +111,11 @@ public final class BleManager {
     /**
      * is debug mode, you can set like setLogDebugMode(BuildConfig.DEBUG),and release version will close log,
      * and if you want close log then set setLogDebugMode(false)
+     * <p><em>new verison you should using {@link #setBleParamsOptions(BleParamsOptions)} to set params</em></p>
      * @param isDebugMode
      */
-    public void setLogDebugMode(boolean isDebugMode){
+    @Deprecated
+    public static void setLogDebugMode(boolean isDebugMode){
         LogUtils.setDebugLog(isDebugMode);
     }
 }

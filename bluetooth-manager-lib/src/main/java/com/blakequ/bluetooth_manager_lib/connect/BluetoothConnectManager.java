@@ -18,7 +18,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
@@ -52,7 +54,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     private BluetoothGattCallback mBluetoothGattCallback;
     private BluetoothManager bluetoothManager;
     private final Map<String, BluetoothGatt> gattMap; //保存连接过的gatt
-    private final List<BluetoothSubScribeData> subscribeList;
+    private final Queue<BluetoothSubScribeData> subscribeQueue;
     private static String serviceUUID;
     private ReconnectParamsBean reconnectParamsBean;
     private List<ConnectStateListener> connectStateListeners;
@@ -61,7 +63,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
 
     public BluetoothConnectManager(Context context) {
         super(context);
-        subscribeList = Collections.synchronizedList(new ArrayList<BluetoothSubScribeData>());
+        subscribeQueue = new ConcurrentLinkedQueue<BluetoothSubScribeData>();
         mBluetoothUtils = BluetoothUtils.getInstance(context);
         bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         gattMap = new ConcurrentHashMap<String, BluetoothGatt>(); //会有并发的断开和连接，故而必须使用并发ConcurrentHashMap才行，否则会有ConcurrentModificationException
@@ -129,7 +131,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
      * @see #setServiceUUID(String)
      */
     public void addBluetoothSubscribeData(BluetoothSubScribeData data){
-        subscribeList.add(data);
+        subscribeQueue.add(data);
     }
 
     /**
@@ -137,7 +139,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
      * @see #addBluetoothSubscribeData(BluetoothSubScribeData)
      */
     public void cleanSubscribeData(){
-        subscribeList.clear();
+        subscribeQueue.clear();
     }
 
     /**
@@ -219,8 +221,8 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     }
 
     @Override
-    protected List<BluetoothSubScribeData> getSubscribeDataList() {
-        return subscribeList;
+    protected Queue<BluetoothSubScribeData> getSubscribeDataQueue() {
+        return subscribeQueue;
     }
 
     /**

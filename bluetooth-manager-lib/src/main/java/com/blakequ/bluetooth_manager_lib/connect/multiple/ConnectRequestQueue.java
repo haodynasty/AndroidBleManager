@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.os.SystemClock;
 
 import com.blakequ.bluetooth_manager_lib.connect.BluetoothConnectInterface;
+import com.blakequ.bluetooth_manager_lib.connect.ConnectConfig;
 import com.blakequ.bluetooth_manager_lib.connect.ConnectState;
 import com.blakequ.bluetooth_manager_lib.connect.ConnectStateListener;
 import com.blakequ.bluetooth_manager_lib.connect.ReconnectParamsBean;
@@ -40,7 +41,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     private static final String TAG = "ConnectRequestQueue";
-    private int queueLen;
     private Map<String, ReconnectParamsBean> reconnectMap; //reconnect device list and reconnect times number
     private Map<String, ConnectState> macMap;//<mac address, is connected>
     private Map<String, BluetoothGatt> gattMap;//notice:ArrayMap is not support concurrent, so can not use ArrayMap
@@ -48,9 +48,8 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     private final BluetoothUtils mBluetoothUtils;
     private List<ConnectStateListener> connectStateListeners;
 
-    public ConnectRequestQueue(Context context, int maxLen){
+    public ConnectRequestQueue(Context context){
         super(context);
-        this.queueLen = maxLen;
         macMap = new ConcurrentHashMap<String, ConnectState>();//if not consider concurrent, should use ArrayMap
         gattMap = new ConcurrentHashMap<String, BluetoothGatt>();
         reconnectMap = new ConcurrentHashMap<String, ReconnectParamsBean>();
@@ -216,7 +215,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
      */
     public void addDeviceToQueue(String macAddress){
         if (!macMap.containsKey(macAddress)){
-            if (macMap.size() >= queueLen){
+            if (macMap.size() >= getMaxLen()){
                 String address = deviceQueue.poll();
                 if (isEmpty(address)){
                     address = getFirstDevice();
@@ -570,19 +569,11 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     }
 
     /**
-     * set max connected number of bluetooth
-     * @param queueLen
-     */
-    protected void setMaxLen(int queueLen){
-        this.queueLen = queueLen;
-    }
-
-    /**
      * max connected number of bluetooth queue
      * @return
      */
     public int getMaxLen(){
-        return this.queueLen;
+        return ConnectConfig.maxConnectDeviceNum;
     }
 
     public boolean isEmpty(String str) {
