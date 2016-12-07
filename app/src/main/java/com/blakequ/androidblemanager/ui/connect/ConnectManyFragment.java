@@ -21,6 +21,7 @@ import com.blakequ.bluetooth_manager_lib.connect.ConnectState;
 import com.blakequ.bluetooth_manager_lib.connect.ConnectStateListener;
 import com.blakequ.bluetooth_manager_lib.connect.multiple.MultiConnectManager;
 import com.blakequ.bluetooth_manager_lib.device.BluetoothLeDevice;
+import com.blakequ.bluetooth_manager_lib.util.LogUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -74,6 +75,24 @@ public class ConnectManyFragment extends Fragment{
                 if (device != null){
                     multiConnectManager.startConnect(device.getAddress());
                 }
+            }
+        });
+        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long l) {
+                final BluetoothLeDevice device = (BluetoothLeDevice) mAdapter.getItem(position);
+                if (device != null){
+                    Snackbar.make(rootView, "Would you want remove device "+device.getAddress()+" ？", Snackbar.LENGTH_LONG)
+                            .setAction("Remove", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    LogUtils.d("ConnectManyFragment", "remove device form queue "+device.getAddress());
+                                    mAdapter.removeDevice(device.getAddress());
+                                    multiConnectManager.removeDeviceFromQueue(device.getAddress());
+                                }
+                            }).show();
+                }
+                return true;
             }
         });
         mTvMax.setText(multiConnectManager.getMaxLen() + "");

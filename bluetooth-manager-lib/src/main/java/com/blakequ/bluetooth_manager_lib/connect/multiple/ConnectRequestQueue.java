@@ -248,6 +248,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     public void removeDeviceFromQueue(String macAddress){
         if (isEmpty(macAddress)) return;
         macMap.remove(macAddress);
+        deviceQueue.remove(macAddress);
         reconnectMap.remove(macAddress);
         if (gattMap.containsKey(macAddress)){
             close(macAddress);
