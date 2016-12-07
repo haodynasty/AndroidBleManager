@@ -157,7 +157,8 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     }
 
     private void updateConnectState(String address, ConnectState state) {
-        macMap.put(address, state);
+        //bug:Can not remove device from queue, this position just update connect state
+        if (macMap.containsKey(address)) macMap.put(address, state);
         updateConnectStateListener(address, state);
         switch (state){
             case NORMAL: //disconnect or close

@@ -44,7 +44,6 @@ public final class BluetoothScanManager {
     private static BluetoothScanManager INSTANCE = null;
 
     private static final String TAG = "BluetoothScanManager";
-    private Context mContext;
     //is background mode or not
     private boolean backgroundMode = false;
     private BackgroundPowerSaver mPowerSaver;
@@ -54,7 +53,6 @@ public final class BluetoothScanManager {
     private static Object obj = new Object();
 
     private BluetoothScanManager(Context context){
-        this.mContext = context;
         mPowerSaver = new BackgroundPowerSaver(context);
         mHandler = new Handler(Looper.getMainLooper());
         cycledLeScanner = new CycledLeScanner(context,
