@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.IntegerRes;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -107,7 +106,7 @@ public class MainActivity extends ToolbarActivity
                 .setMaxConnectDeviceNum(5)
                 .setReconnectBaseSpaceTime(8000)
                 .setReconnectMaxTimes(4)
-                .setReconnectStrategy(ConnectConfig.RECONNECT_LINE_EXPONENT)
+                .setReconnectStrategy(ConnectConfig.RECONNECT_FIXED_TIME)
                 .setReconnectedLineToExponentTimes(5)
                 .build());
 

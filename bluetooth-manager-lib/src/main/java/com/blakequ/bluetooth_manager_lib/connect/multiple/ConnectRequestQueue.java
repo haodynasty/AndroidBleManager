@@ -7,6 +7,8 @@ import android.content.Context;
 import android.os.Looper;
 import android.os.SystemClock;
 
+import com.blakequ.bluetooth_manager_lib.BleManager;
+import com.blakequ.bluetooth_manager_lib.BleParamsOptions;
 import com.blakequ.bluetooth_manager_lib.connect.BluetoothConnectInterface;
 import com.blakequ.bluetooth_manager_lib.connect.ConnectConfig;
 import com.blakequ.bluetooth_manager_lib.connect.ConnectState;
@@ -110,7 +112,8 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         if (deviceQueue.size() > 0 && mBluetoothUtils.isBluetoothIsEnable()){
             triggerConnectNextDevice();
         }else {
-            LogUtils.e(TAG, "Fail to start connect task! connect queue size " + deviceQueue.size() + " ble state:" + mBluetoothUtils.isBluetoothIsEnable());
+            triggerReconnect("");
+            LogUtils.e(TAG, "startConnect--Fail to from connect queue, and start reconnect task. ble state:" + mBluetoothUtils.isBluetoothIsEnable());
         }
     }
 
@@ -130,8 +133,8 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
                         reconnectMap.put(macAddress, bean);
                     }else{
                         bean = reconnectMap.get(macAddress);
-                        bean.updateAddress(macAddress);
                     }
+                    bean.setReconnectNow(true);
                     startReconnectTask();
                 }else{
                     LogUtils.i(TAG, "Device is " + state + " state");
@@ -158,8 +161,10 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
 
     private void updateConnectState(String address, ConnectState state) {
         //bug:Can not remove device from queue, this position just update connect state
-        if (macMap.containsKey(address)) macMap.put(address, state);
-        updateConnectStateListener(address, state);
+        if (macMap.containsKey(address)) {
+            macMap.put(address, state);
+            updateConnectStateListener(address, state);
+        }
         switch (state){
             case NORMAL: //disconnect or close
                 String mac = deviceQueue.peek();
@@ -169,7 +174,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
                     }
                     triggerConnectNextDevice();
                 }
-                triggerReconnect();
+                triggerReconnect(address);
                 break;
             case CONNECTED:
                 reconnectMap.remove(address);
@@ -180,12 +185,28 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
                     }
                     triggerConnectNextDevice();
                 }
-                triggerReconnect();
+                triggerReconnect(address);
                 break;
             case CONNECTING:
+                //start check time out connect
+                BleParamsOptions options = BleManager.getBleParamsOptions();
+                getMainLooperHandler().postDelayed(timeOutTask, options.getConnectTimeOutTimes());
                 break;
         }
     }
+
+    /**
+     * connect time out task
+     */
+    private Runnable timeOutTask = new Runnable() {
+        @Override
+        public void run() {
+            if (!mBluetoothUtils.isBluetoothIsEnable()){
+                LogUtils.w(TAG, "Fail to connect device! Bluetooth is not enable!");
+                closeAll();
+            }
+        }
+    };
 
     /**
      * release resource
@@ -372,7 +393,7 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
     /**
      * trigger reconnect task
      */
-    private void triggerReconnect(){
+    private void triggerReconnect(String mac){
         //if deviceQueue is null, start reconnect
         if (deviceQueue.size() == 0){
             //将重连的设备全部放入重连队列
@@ -382,6 +403,10 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
                     if (!reconnectMap.containsKey(key)){
                         bean = new ReconnectParamsBean(key);
                         reconnectMap.put(key, bean);
+                    }else if(key.equals(mac)){
+                        bean = reconnectMap.get(key);
+                        bean.addNumber();
+                        LogUtils.d(TAG, "trigger reconnect, reconnect after "+(bean.getNextReconnectTime() - SystemClock.elapsedRealtime())/1000+" seconds");
                     }
                 }
             }
@@ -409,8 +434,10 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
         //start reconnect task
         if (!isEmpty(address)){
             if (nextTime <= SystemClock.elapsedRealtime()){
+                LogUtils.d(TAG, "start reconnect device:"+address);
                 reconnectDevice(address);
             }else{
+                LogUtils.d(TAG, "start reconnect device "+address+" after "+(nextTime - SystemClock.elapsedRealtime())/1000+" seconds");
                 getMainLooperHandler().removeCallbacks(reconnectTask);
                 getMainLooperHandler().postDelayed(reconnectTask, nextTime - SystemClock.elapsedRealtime());
             }
@@ -438,8 +465,6 @@ public abstract class ConnectRequestQueue extends BluetoothConnectInterface{
             if (mBluetoothUtils.isBluetoothIsEnable()) {
                 if (bean == null){
                     reconnectMap.put(address, new ReconnectParamsBean(address));
-                }else{
-                    bean.addNumber();
                 }
 
                 //check is connected or connectting

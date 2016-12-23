@@ -26,12 +26,13 @@ public class ReconnectParamsBean {
     private String address;
     private int number;//reconnect times number
     private long nextReconnectTime;//next reconnect time
-    private long startDisconnectTime;
+    private long startDisconnectTime; //the bluetooth disconnected time
+    private boolean isReconnectNow = false;
 
     public ReconnectParamsBean(String address) {
         this.address = address;
         this.startDisconnectTime = SystemClock.elapsedRealtime();
-        this.number = 1;
+        this.number = 0;
     }
 
     public String getAddress() {
@@ -41,7 +42,7 @@ public class ReconnectParamsBean {
     public void updateAddress(String address){
         this.address = address;
         this.startDisconnectTime = SystemClock.elapsedRealtime();
-        this.number = 1;
+        this.number = 0;
     }
 
     /**
@@ -64,6 +65,13 @@ public class ReconnectParamsBean {
             case ConnectConfig.RECONNECT_LINEAR:
                 nextReconnectTime = startDisconnectTime + options.getReconnectBaseSpaceTime()*number;
                 break;
+            case ConnectConfig.RECONNECT_FIXED_TIME:
+                nextReconnectTime = startDisconnectTime + options.getReconnectBaseSpaceTime();
+                break;
+        }
+
+        if (isReconnectNow){
+            nextReconnectTime = SystemClock.elapsedRealtime();
         }
 
         //max reconnect times, not reconnect
@@ -75,15 +83,33 @@ public class ReconnectParamsBean {
         return nextReconnectTime;
     }
 
+    public boolean isReconnectNow() {
+        return isReconnectNow;
+    }
+
+    public void setReconnectNow(boolean reconnectNow) {
+        number = 0;
+        startDisconnectTime = SystemClock.elapsedRealtime();
+        isReconnectNow = reconnectNow;
+    }
+
     public int getNumber() {
         return number;
     }
 
+    /**
+     * invoke after bluetooth disconnected
+     */
     public void addNumber() {
+        isReconnectNow = false;
         this.startDisconnectTime = SystemClock.elapsedRealtime();
         this.number++;
     }
 
+    /**
+     * if you can not want to reconnect by auto, you can set a max value
+     * @param num
+     */
     public void setNumber(int num){
         this.number = num;
     }

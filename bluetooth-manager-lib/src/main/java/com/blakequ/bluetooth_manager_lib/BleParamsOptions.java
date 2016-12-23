@@ -3,6 +3,8 @@ package com.blakequ.bluetooth_manager_lib;
 
 import android.support.annotation.IntRange;
 
+import com.blakequ.bluetooth_manager_lib.connect.ConnectConfig;
+
 import static com.blakequ.bluetooth_manager_lib.scan.BackgroundPowerSaver.DEFAULT_BACKGROUND_BETWEEN_SCAN_PERIOD;
 import static com.blakequ.bluetooth_manager_lib.scan.BackgroundPowerSaver.DEFAULT_BACKGROUND_SCAN_PERIOD;
 import static com.blakequ.bluetooth_manager_lib.scan.BackgroundPowerSaver.DEFAULT_FOREGROUND_BETWEEN_SCAN_PERIOD;
@@ -41,6 +43,7 @@ public class BleParamsOptions {
     private final int reconnectMaxTimes; //最大重连次数
     private final long reconnectBaseSpaceTime; //重连基础时间间隔ms
     private final int reconnectedLineToExponentTimes; //快速重连的次数(线性到指数)
+    private final int connectTimeOutTimes; //连接超时时间
 
     public boolean isDebugMode() {
         return isDebugMode;
@@ -82,6 +85,10 @@ public class BleParamsOptions {
         return reconnectedLineToExponentTimes;
     }
 
+    public int getConnectTimeOutTimes() {
+        return connectTimeOutTimes;
+    }
+
     private BleParamsOptions(Builder builder){
         this.isDebugMode = builder.isDebugMode;
         this.foregroundScanPeriod = builder.foregroundScanPeriod;
@@ -93,6 +100,7 @@ public class BleParamsOptions {
         this.reconnectMaxTimes = builder.reconnectMaxTimes;
         this.reconnectBaseSpaceTime = builder.reconnectBaseSpaceTime;
         this.reconnectedLineToExponentTimes = builder.reconnectedLineToExponentTimes;
+        this.connectTimeOutTimes = builder.connectTimeOutTimes;
     }
 
     public static class Builder {
@@ -103,10 +111,11 @@ public class BleParamsOptions {
         private long backgroundScanPeriod = DEFAULT_BACKGROUND_SCAN_PERIOD;
         private long backgroundBetweenScanPeriod = DEFAULT_BACKGROUND_BETWEEN_SCAN_PERIOD;
         private int maxConnectDeviceNum = 5;//一次最大连接设备个数
-        private int reconnectStrategy = 3; //重连策略
+        private int reconnectStrategy = ConnectConfig.RECONNECT_LINE_EXPONENT; //重连策略
         private int reconnectMaxTimes = Integer.MAX_VALUE; //最大重连次数
         private long reconnectBaseSpaceTime = 8000; //重连基础时间间隔ms
         private int reconnectedLineToExponentTimes = 5; //快速重连的次数(线性到指数)
+        private int connectTimeOutTimes = 15000; //连接超时时间15s
 
         /**
          * setting is debug mode, if false then the log will disable
@@ -203,9 +212,9 @@ public class BleParamsOptions {
          * @param reconnectStrategy
          * @return
          */
-        public Builder setReconnectStrategy(@IntRange(from = 1, to = 3) int reconnectStrategy) {
-            if (reconnectStrategy < 1 || reconnectStrategy > 3){
-                throw new IllegalArgumentException("reconnectStrategy range is 1 to 3");
+        public Builder setReconnectStrategy(@IntRange(from = 1, to = 4) int reconnectStrategy) {
+            if (reconnectStrategy < 1 || reconnectStrategy > 4){
+                throw new IllegalArgumentException("reconnectStrategy range is 1 to 4");
             }
             this.reconnectStrategy = reconnectStrategy;
             return this;
@@ -247,6 +256,19 @@ public class BleParamsOptions {
                 throw new IllegalArgumentException("reconnectBaseSpaceTime must >= 1000ms, now is "+reconnectBaseSpaceTime);
             }
             this.reconnectBaseSpaceTime = reconnectBaseSpaceTime;
+            return this;
+        }
+
+        /**
+         * time out of connect device(after this time will check bluetooth state, if bluetooth not available will close all connect)
+         * @param connectTimeOutTimes default is 15 seconds(must > 1 seconds)
+         * @return
+         */
+        public Builder setConnectTimeOutTimes(@IntRange(from = 1000) int connectTimeOutTimes){
+            if (connectTimeOutTimes < 1000){
+                throw new IllegalArgumentException("connectTimeOutTimes must >= 1000ms, now is "+connectTimeOutTimes);
+            }
+            this.connectTimeOutTimes = connectTimeOutTimes;
             return this;
         }
 

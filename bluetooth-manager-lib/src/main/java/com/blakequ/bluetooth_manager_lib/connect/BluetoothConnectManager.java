@@ -11,6 +11,8 @@ import android.content.Context;
 import android.os.Looper;
 import android.os.SystemClock;
 
+import com.blakequ.bluetooth_manager_lib.BleManager;
+import com.blakequ.bluetooth_manager_lib.BleParamsOptions;
 import com.blakequ.bluetooth_manager_lib.util.BluetoothUtils;
 import com.blakequ.bluetooth_manager_lib.util.LogUtils;
 
@@ -358,14 +360,15 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
             if (!reconnectParamsBean.getAddress().equals(address)){
                 reconnectParamsBean.updateAddress(address);
             }else {
-                if (reconnectParamsBean.getNumber() == 1){//same device
+                if (reconnectParamsBean.getNumber() == 0){//same device
                     reconnectParamsBean.updateAddress(address);
                 }else if(reconnectParamsBean.getNumber() == 1000){//disconnect by hand
                     LogUtils.i(TAG, "reconnect fail! disconnect by hand");
-                    reconnectParamsBean.setNumber(1);
+                    reconnectParamsBean.setNumber(0);
                     return;
                 }
             }
+            reconnectParamsBean.addNumber();
         }else{
             reconnectParamsBean = new ReconnectParamsBean(address);
         }
@@ -398,7 +401,6 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
                     if (isReconncted && getConnectedDevice().size() == 0) {
                         LogUtils.d(TAG, "reconnecting! will reconnect " + address);
                         if (reconnectParamsBean != null){
-                            reconnectParamsBean.addNumber();
                             //重连必须在主线程运行
                             runOnUiThread(new Runnable() {
                                 @Override
@@ -446,9 +448,27 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     private void updateConnectStateListener(String address, ConnectState state){
         synchronized (connectStateListeners){
             currentState = state;
+            if (state == ConnectState.CONNECTING){
+                //start check time out connect
+                BleParamsOptions options = BleManager.getBleParamsOptions();
+                getMainLooperHandler().postDelayed(timeOutTask, options.getConnectTimeOutTimes());
+            }
             for (ConnectStateListener listener:connectStateListeners){
                 if (listener != null) listener.onConnectStateChanged(address, state);
             }
         }
     }
+
+    /**
+     * connect time out task
+     */
+    private Runnable timeOutTask = new Runnable() {
+        @Override
+        public void run() {
+            if (!mBluetoothUtils.isBluetoothIsEnable()){
+                LogUtils.w(TAG, "Fail to connect device! Bluetooth is not enable!");
+                closeAll();
+            }
+        }
+    };
 }

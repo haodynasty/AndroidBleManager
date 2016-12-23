@@ -19,10 +19,12 @@ package com.blakequ.bluetooth_manager_lib.connect;
 public class ConnectConfig {
     public static int maxConnectDeviceNum = 5;//一次最大连接个数
 
-    /**线性间隔重连*/
+    /**线性间隔重连，每次断开后重连时间是线性增长*/
     public static final int RECONNECT_LINEAR = 1;
     /**指数间隔重新*/
     public static final int RECONNECT_EXPONENT = 2;
     /**先线性后指数重新*/
     public static final int RECONNECT_LINE_EXPONENT = 3;
+    /**固定时间重连,每次断开后都是相同时间之后发起重连*/
+    public static final int RECONNECT_FIXED_TIME = 4;
 }
