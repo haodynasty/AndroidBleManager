@@ -14,7 +14,7 @@ import android.os.SystemClock;
 import com.blakequ.bluetooth_manager_lib.BleManager;
 import com.blakequ.bluetooth_manager_lib.BleParamsOptions;
 import com.blakequ.bluetooth_manager_lib.util.BluetoothUtils;
-import com.blakequ.bluetooth_manager_lib.util.LogUtils;
+import com.orhanobut.logger.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,6 +70,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
         bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         gattMap = new ConcurrentHashMap<String, BluetoothGatt>(); //会有并发的断开和连接，故而必须使用并发ConcurrentHashMap才行，否则会有ConcurrentModificationException
         connectStateListeners = new ArrayList<>();
+        BleManager.getBleParamsOptions();
     }
 
     @Override
@@ -176,7 +177,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
         //is bluetooth enable
         //可以不关闭，以便重用，因为在连接connect的时候可以快速连接
         if (!checkIsSamsung() || !mBluetoothUtils.isBluetoothIsEnable()){//三星手机断开后直接连接
-            LogUtils.e(TAG, "Disconnected from GATT server address:"+gatt.getDevice().getAddress());
+            Logger.e( "Disconnected from GATT server address:"+gatt.getDevice().getAddress());
             close(gatt.getDevice().getAddress()); //防止出现status 133
         }else {
             updateConnectStateListener(gatt.getDevice().getAddress(), ConnectState.NORMAL);
@@ -200,7 +201,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     @Override
     protected void onDiscoverServicesFail(final BluetoothGatt gatt) {
         if (!checkIsSamsung() || !mBluetoothUtils.isBluetoothIsEnable()){//三星手机断开后直接连接
-            LogUtils.e(TAG, "Disconnected from GATT server address:"+gatt.getDevice().getAddress());
+            Logger.e( "Disconnected from GATT server address:"+gatt.getDevice().getAddress());
             close(gatt.getDevice().getAddress()); //防止出现status 133
         }else {
             updateConnectStateListener(gatt.getDevice().getAddress(), ConnectState.NORMAL);
@@ -263,13 +264,13 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
     public boolean connect(final String address) {
         BluetoothAdapter mAdapter = mBluetoothUtils.getBluetoothAdapter();
         if (mAdapter == null || address == null) {
-            LogUtils.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
+            Logger.w( "BluetoothAdapter not initialized or unspecified address.");
             updateConnectStateListener(address, ConnectState.NORMAL);
             return false;
         }
 
         if (!mBluetoothUtils.isBluetoothIsEnable()){
-            LogUtils.e(TAG, "bluetooth is not enable.");
+            Logger.e( "bluetooth is not enable.");
             updateConnectStateListener(address, ConnectState.NORMAL);
             return false;
         }
@@ -277,7 +278,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
         // Previously connected device.  Try to reconnect.
         if (gattMap.containsKey(address)){
             BluetoothGatt mBluetoothGatt = gattMap.get(address);
-            LogUtils.i(TAG, "Trying to use an existing gatt and reconnection device " + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
+            Logger.i( "Trying to use an existing gatt and reconnection device " + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
             if (mBluetoothGatt.connect()) {
                 closeOtherDevice(address);
                 updateConnectStateListener(address, ConnectState.CONNECTING);
@@ -294,16 +295,16 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
              parameter to false.*/
             BluetoothGatt mBluetoothGatt = device.connectGatt(context, false, gattCallback);
             if (mBluetoothGatt != null){
-                LogUtils.d(TAG, "create a new connection address=" + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
+                Logger.d( "create a new connection address=" + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
                 gattMap.put(address, mBluetoothGatt);
                 closeOtherDevice(address);
                 updateConnectStateListener(address, ConnectState.CONNECTING);
                 return true;
             }else{
-                LogUtils.e(TAG, "Get Gatt fail!, address=" + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
+                Logger.e( "Get Gatt fail!, address=" + address + " thread:" + (Thread.currentThread() == Looper.getMainLooper().getThread()));
             }
         }else{
-            LogUtils.e(TAG, "Device not found, address=" + address);
+            Logger.e( "Device not found, address=" + address);
         }
         updateConnectStateListener(address, ConnectState.NORMAL);
         return false;
@@ -316,7 +317,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
      */
     public boolean close(String address) {
         if (!isEmpty(address) && gattMap.containsKey(address)){
-            LogUtils.w(TAG, "close gatt server " + address);
+            Logger.w("close gatt server " + address);
             BluetoothGatt mBluetoothGatt = gattMap.get(address);
             mBluetoothGatt.close();
             gattMap.remove(address);
@@ -344,7 +345,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
         if (!isEmpty(address) && gattMap.containsKey(address)){
             reconnectParamsBean = new ReconnectParamsBean(address);
             reconnectParamsBean.setNumber(1000);
-            LogUtils.w(TAG, "disconnect gatt server " + address);
+            Logger.w("disconnect gatt server " + address);
             BluetoothGatt mBluetoothGatt = gattMap.get(address);
             mBluetoothGatt.disconnect();
             updateConnectStateListener(address, ConnectState.NORMAL);
@@ -363,7 +364,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
                 if (reconnectParamsBean.getNumber() == 0){//same device
                     reconnectParamsBean.updateAddress(address);
                 }else if(reconnectParamsBean.getNumber() == 1000){//disconnect by hand
-                    LogUtils.i(TAG, "reconnect fail! disconnect by hand");
+                    Logger.i("reconnect fail! disconnect by hand");
                     reconnectParamsBean.setNumber(0);
                     return;
                 }
@@ -378,7 +379,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
         if (nextReconnectTime < 0){
             nextReconnectTime = 0;
         }
-        LogUtils.i(TAG, "next reconnect time " + reconnectParamsBean.toString()+" after:"+nextReconnectTime/1000+"seconds");
+        Logger.i("next reconnect time " + reconnectParamsBean.toString()+" after:"+nextReconnectTime/1000+"seconds");
 
         getMainLooperHandler().postDelayed(new Runnable() {
             @Override
@@ -399,7 +400,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
                     }
 
                     if (isReconncted && getConnectedDevice().size() == 0) {
-                        LogUtils.d(TAG, "reconnecting! will reconnect " + address);
+                        Logger.d("reconnecting! will reconnect " + address);
                         if (reconnectParamsBean != null){
                             //重连必须在主线程运行
                             runOnUiThread(new Runnable() {
@@ -409,13 +410,13 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
                                 }
                             });
                         }else {
-                            LogUtils.w(TAG, "Fail to reconnect, ReconnectParams is null");
+                            Logger.w("Fail to reconnect, ReconnectParams is null");
                         }
                     } else {
-                        LogUtils.w(TAG, "Fail to reconnect, refuse! " + address + " flag:" + isReconncted);
+                        Logger.w("Fail to reconnect, refuse! " + address + " flag:" + isReconncted);
                     }
                 }else{
-                    LogUtils.w(TAG, "Fail to reconnect, the bluetooth is disable!");
+                    Logger.w("Fail to reconnect, the bluetooth is disable!");
                 }
             }
         }, nextReconnectTime);
@@ -466,7 +467,7 @@ public final class BluetoothConnectManager extends BluetoothConnectInterface{
         @Override
         public void run() {
             if (!mBluetoothUtils.isBluetoothIsEnable()){
-                LogUtils.w(TAG, "Fail to connect device! Bluetooth is not enable!");
+                Logger.w("Fail to connect device! Bluetooth is not enable!");
                 closeAll();
             }
         }

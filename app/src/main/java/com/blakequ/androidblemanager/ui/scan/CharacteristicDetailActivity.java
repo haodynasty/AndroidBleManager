@@ -30,7 +30,7 @@ import com.blakequ.bluetooth_manager_lib.device.BluetoothLeDevice;
 import com.blakequ.bluetooth_manager_lib.device.resolvers.GattAttributeResolver;
 import com.blakequ.bluetooth_manager_lib.util.BluetoothUtils;
 import com.blakequ.bluetooth_manager_lib.util.ByteUtils;
-import com.blakequ.bluetooth_manager_lib.util.LogUtils;
+import com.orhanobut.logger.Logger;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -100,7 +100,6 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
     private NotifyListAdapter notifyListAdapter;
     private BluetoothConnectManager connectManager;
     private BluetoothGatt gatt;
-    private static final String TAG = "CharacteristicDetailActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,7 +130,7 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
                 }
             }
         }else {
-            LogUtils.e(TAG, "gatt is null");
+            Logger.e("gatt is null");
         }
         if (characteristic != null){
             initView();
@@ -146,7 +145,7 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
             checkProperty(characteristic.getProperties());
             for (BluetoothGattDescriptor gattDescriptor:characteristic.getDescriptors()){
                 mAdapter.add(gattDescriptor);
-                LogUtils.i(TAG, "desc:" + gattDescriptor.getUuid());
+                Logger.i("desc:" + gattDescriptor.getUuid());
             }
 
             //start subscribe auto
@@ -258,7 +257,7 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
                                 gatt.writeCharacteristic(characteristic);
                                 mTvWriteValue.setText("0x"+writeValue);
                             }else{
-                                LogUtils.e(TAG, "write value fail");
+                                Logger.e("write value fail");
                             }
                         }else {
                             Toast.makeText(CharacteristicDetailActivity.this, "Input value is invalid, you should input like(hex value): 01, 1101, 0A11", Toast.LENGTH_LONG).show();
@@ -388,7 +387,7 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
 
     public void setCharacteristicNotification(final BluetoothGattCharacteristic characteristic, final boolean enabled) {
         if (gatt == null) {
-            LogUtils.w("CharacteristicDetailActivity", "BluetoothAdapter not initialized");
+            Logger.w("CharacteristicDetailActivity", "BluetoothAdapter not initialized");
             return;
         }
         gatt.setCharacteristicNotification(characteristic, enabled);

@@ -105,7 +105,7 @@ public class BleParamsOptions {
 
     public static class Builder {
 
-        private boolean isDebugMode = false;
+        private boolean isDebugMode = true;
         private long foregroundScanPeriod = DEFAULT_FOREGROUND_SCAN_PERIOD;
         private long foregroundBetweenScanPeriod = DEFAULT_FOREGROUND_BETWEEN_SCAN_PERIOD;
         private long backgroundScanPeriod = DEFAULT_BACKGROUND_SCAN_PERIOD;
@@ -119,7 +119,7 @@ public class BleParamsOptions {
 
         /**
          * setting is debug mode, if false then the log will disable
-         * @param isDebugMode you can set by BuildConfig.DEBUG
+         * @param isDebugMode you can set by BuildConfig.DEBUG, default is true
          * @return
          */
         public Builder setDebugMode(boolean isDebugMode){

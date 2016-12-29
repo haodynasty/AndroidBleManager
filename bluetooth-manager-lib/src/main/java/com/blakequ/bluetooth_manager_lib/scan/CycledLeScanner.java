@@ -15,7 +15,7 @@ import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanCallbackCompat
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanFilterCompat;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanSettingsCompat;
 import com.blakequ.bluetooth_manager_lib.util.BluetoothUtils;
-import com.blakequ.bluetooth_manager_lib.util.LogUtils;
+import com.orhanobut.logger.Logger;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -38,7 +38,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 @TargetApi(18)
 public class CycledLeScanner {
-    private static final String TAG = "CycledLeScanner";
     private boolean isPrintCycleTime = true;
     private final Context mContext;
     private long scanPeriod;
@@ -132,11 +131,11 @@ public class CycledLeScanner {
      */
     public void setBackgroundMode(long scanPeriod, long betweenScanPeriod, boolean backgroundFlag) {
         if (android.os.Build.VERSION.SDK_INT < 18) {
-            LogUtils.w(TAG, "Not supported prior to API 18.  Method invocation will be ignored");
+            Logger.w("Not supported prior to API 18.  Method invocation will be ignored");
             return;
         }
         if (backgroundFlag != mBackgroundFlag) {
-            LogUtils.d(TAG, "restart polling task scanPeriod:" + scanPeriod + " betweenScanPeriod:" + betweenScanPeriod + " backgroundFlag:" + backgroundFlag + " mode:" + mBackgroundFlag);
+            Logger.d("restart polling task scanPeriod:" + scanPeriod + " betweenScanPeriod:" + betweenScanPeriod + " backgroundFlag:" + backgroundFlag + " mode:" + mBackgroundFlag);
             mBackgroundFlag = backgroundFlag;
             this.scanPeriod = scanPeriod;
             this.betweenScanPeriod = betweenScanPeriod;
@@ -146,7 +145,7 @@ public class CycledLeScanner {
             if (nextScanStartTime > now){
                 long proposedNextScanStartTime = lastScanEndTime + betweenScanPeriod;
                 if (proposedNextScanStartTime < nextScanStartTime){
-                    LogUtils.d(TAG, "Waiting...Adjusted nextScanStartTime to be" + (proposedNextScanStartTime - now) + " old:" + (nextScanStartTime - now));
+                    Logger.d("Waiting...Adjusted nextScanStartTime to be" + (proposedNextScanStartTime - now) + " old:" + (nextScanStartTime - now));
                     nextScanStartTime = proposedNextScanStartTime;
                 }
             }
@@ -155,7 +154,7 @@ public class CycledLeScanner {
             if (scanStopTime > now){
                 long proposedStopTime = nextScanStartTime + scanPeriod;
                 if (proposedStopTime < scanStopTime){
-                    LogUtils.d(TAG, "Scanning...Adjusted scanStopTime to be " + (proposedStopTime - now) + " old:" + (scanStopTime - now));
+                    Logger.d("Scanning...Adjusted scanStopTime to be " + (proposedStopTime - now) + " old:" + (scanStopTime - now));
                     scanStopTime = proposedStopTime;
                 }
             }
@@ -163,10 +162,10 @@ public class CycledLeScanner {
             //set scan setting params
             if (!isSetScanSetting || scanSettings == null){
                 if (mBackgroundFlag) {
-                    LogUtils.d(TAG, "starting filtered scan in SCAN_MODE_LOW_POWER");
+                    Logger.d("starting filtered scan in SCAN_MODE_LOW_POWER");
                     scanSettings = (new ScanSettingsCompat.Builder().setScanMode(ScanSettingsCompat.SCAN_MODE_LOW_POWER)).build();
                 } else {
-                    LogUtils.d(TAG, "starting non-filtered scan in SCAN_MODE_LOW_LATENCY");
+                    Logger.d("starting non-filtered scan in SCAN_MODE_LOW_LATENCY");
                     scanSettings = (new ScanSettingsCompat.Builder().setScanMode(ScanSettingsCompat.SCAN_MODE_LOW_LATENCY)).build();
                 }
             }
@@ -188,7 +187,7 @@ public class CycledLeScanner {
     private void scanLeDevice(boolean enable) {
         BluetoothAdapter mAdapter = mBluetoothUtils.getBluetoothAdapter();
         if (mBluetoothUtils == null || !mBluetoothUtils.isBluetoothIsEnable()){
-            LogUtils.e(TAG, "ScanDevice: Scanning fail! BluetoothAdapter is null");
+            Logger.e("ScanDevice: Scanning fail! BluetoothAdapter is null");
             return;
         }
 
@@ -196,49 +195,49 @@ public class CycledLeScanner {
             if (!isStartNow){
                 return;
             }else{
-                LogUtils.i(TAG, "ScanDevice: Scan right now!");
+                Logger.i("ScanDevice: Scan right now!");
                 isStartNow = false;
             }
         }
 
         if (enable) {
             if (mScanning) {
-                LogUtils.d(TAG, "ScanDevice: Scanning is running now !");
+                Logger.d("ScanDevice: Scanning is running now !");
                 return;
             }
-            LogUtils.d(TAG, "ScanDevice: Starting Scanning scanPeriod:"+scanPeriod+", between:"+betweenScanPeriod);
+            Logger.d("ScanDevice: Starting Scanning scanPeriod:"+scanPeriod+", between:"+betweenScanPeriod);
             mScanning = true;
             if (!isPauseScan || isOnceScan){
                 try {
                     if (android.os.Build.VERSION.SDK_INT < 23 || checkLocationPermission()) {
                         if (android.os.Build.VERSION.SDK_INT >= 23 && !isGpsProviderEnabled(mContext)){
-                            LogUtils.e(TAG, "If SDK>=23, current SDK=" + android.os.Build.VERSION.SDK_INT+", Location info not open and can not scan any device!");
+                            Logger.e("If SDK>=23, current SDK=" + android.os.Build.VERSION.SDK_INT+", Location info not open and can not scan any device!");
                             scanCallbackCompat.onScanFailed(ScanCallbackCompat.SCAN_FAILED_LOCATION_CLOSE);
                         }else {
-                            LogUtils.i(TAG, "ScanDevice: Start scan...");
+                            Logger.i("ScanDevice: Start scan...");
                             BluetoothLeScannerCompat.startScan(mAdapter, scanFilterCompats, getScanSettings(), scanCallbackCompat);
                         }
                     }else{
                         scanCallbackCompat.onScanFailed(ScanCallbackCompat.SCAN_FAILED_LOCATION_PERMISSION_FORBID);
-                        LogUtils.e(TAG, "If SDK>=23, current SDK="+android.os.Build.VERSION.SDK_INT+", Please check the location permission is enabled(ACCESS_COARSE_LOCATION and ACCESS_FINE_LOCATION)");
+                        Logger.e("If SDK>=23, current SDK="+android.os.Build.VERSION.SDK_INT+", Please check the location permission is enabled(ACCESS_COARSE_LOCATION and ACCESS_FINE_LOCATION)");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    LogUtils.e(TAG, "Internal Android exception scanning for beacons "+e.toString());
+                    Logger.e("Internal Android exception scanning for beacons "+e.toString());
                 }
 
                 if (isOnceScan){
-                    LogUtils.d(TAG, "ScanDevice: Scanning once");
+                    Logger.d("ScanDevice: Scanning once");
                     isOnceScan = false;
                 }
             }else{
-                LogUtils.d(TAG, "ScanDevice: Pause Scanning");
+                Logger.d("ScanDevice: Pause Scanning");
             }
             scanStopTime = SystemClock.elapsedRealtime() + scanPeriod;
             nextScanStartTime = scanStopTime + betweenScanPeriod;
             scheduleScanStop();
         } else {
-            LogUtils.d(TAG, "ScanDevice: Stopping Scan");
+            Logger.d("ScanDevice: Stopping Scan");
             stopScan();
         }
     }
@@ -248,7 +247,7 @@ public class CycledLeScanner {
         long millisecondsUntilStop = scanStopTime - SystemClock.elapsedRealtime();
         if (millisecondsUntilStop > 0) {
             if (isPrintCycleTime){
-                LogUtils.d(TAG, "Waiting to stop scan cycle for another " + millisecondsUntilStop + " milliseconds");
+                Logger.d("Waiting to stop scan cycle for another " + millisecondsUntilStop + " milliseconds");
             }
             mHandler.postDelayed(new Runnable() {
                 @Override
@@ -257,7 +256,7 @@ public class CycledLeScanner {
                 }
             }, millisecondsUntilStop > 1000 ? 1000 : millisecondsUntilStop);
         } else {
-            LogUtils.d(TAG, "Stop cycle scan");
+            Logger.d("Stop cycle scan");
             stopScan();
         }
     }
@@ -272,12 +271,12 @@ public class CycledLeScanner {
                 try {
                     BluetoothLeScannerCompat.stopScan(mAdapter, scanCallbackCompat);
                     lastScanEndTime = SystemClock.elapsedRealtime();
-                    LogUtils.d(TAG, "stopping bluetooth le scan "+lastScanEndTime);
+                    Logger.d("stopping bluetooth le scan "+lastScanEndTime);
                 } catch (Exception e) {
-                    LogUtils.w(TAG, "Internal Android exception scanning for beacons "+e.toString());
+                    Logger.w("Internal Android exception scanning for beacons "+e.toString());
                 }
             } else {
-                LogUtils.d(TAG, "Bluetooth is disabled.  Cannot scan for beacons.");
+                Logger.d("Bluetooth is disabled.  Cannot scan for beacons.");
             }
             nextScanStartTime = SystemClock.elapsedRealtime() + betweenScanPeriod;
             //start next scan cycle
@@ -296,7 +295,7 @@ public class CycledLeScanner {
         long millisecondsUntilStart = nextScanStartTime - SystemClock.elapsedRealtime();
         if (millisecondsUntilStart > 0) {
             if (isPrintCycleTime){
-                LogUtils.d(TAG, "Waiting to start next Bluetooth scan for another "+millisecondsUntilStart+" milliseconds");
+                Logger.d("Waiting to start next Bluetooth scan for another "+millisecondsUntilStart+" milliseconds");
             }
             // Don't actually wait until the next scan time -- only wait up to 1 second.  This
             // allows us to start scanning sooner if a consumer enters the foreground and expects
@@ -311,7 +310,7 @@ public class CycledLeScanner {
             }, millisecondsUntilStart > 1000 ? 1000 : millisecondsUntilStart);
             return true;
         }
-        LogUtils.d(TAG, "Start cycle scan");
+        Logger.d("Start cycle scan");
         return false;
     }
 
@@ -323,10 +322,10 @@ public class CycledLeScanner {
     private ScanSettingsCompat getScanSettings() {
         if (scanSettings == null){
             if (mBackgroundFlag) {
-                LogUtils.d(TAG, "starting filtered scan in SCAN_MODE_LOW_POWER");
+                Logger.d("starting filtered scan in SCAN_MODE_LOW_POWER");
                 scanSettings = (new ScanSettingsCompat.Builder().setScanMode(ScanSettingsCompat.SCAN_MODE_LOW_POWER)).build();
             } else {
-                LogUtils.d(TAG, "starting non-filtered scan in SCAN_MODE_LOW_LATENCY");
+                Logger.d("starting non-filtered scan in SCAN_MODE_LOW_LATENCY");
                 scanSettings = (new ScanSettingsCompat.Builder().setScanMode(ScanSettingsCompat.SCAN_MODE_LOW_LATENCY)).build();
             }
         }

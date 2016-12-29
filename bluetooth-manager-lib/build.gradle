@@ -27,6 +27,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile "com.android.support:appcompat-v7:$SUPPORT_LIBRARY_VERSION"
+    compile 'com.blakequ.logger:logger:1.0.1'
 }
 
 //执行bintrayUpload之前必须执行gradlew install生成poms文件（build/poms）

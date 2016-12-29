@@ -4,7 +4,7 @@ import android.os.SystemClock;
 
 import com.blakequ.bluetooth_manager_lib.BleManager;
 import com.blakequ.bluetooth_manager_lib.BleParamsOptions;
-import com.blakequ.bluetooth_manager_lib.util.LogUtils;
+import com.orhanobut.logger.Logger;
 
 /**
  * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
@@ -76,7 +76,7 @@ public class ReconnectParamsBean {
 
         //max reconnect times, not reconnect
         if (number >= options.getReconnectMaxTimes()){
-            LogUtils.d("ReconnectParamsBean", "reconnect number="+number+" more than max times "+options.getReconnectMaxTimes());
+            Logger.d("reconnect number="+number+" more than max times "+options.getReconnectMaxTimes());
             //将时间设置非常大
             nextReconnectTime = SystemClock.elapsedRealtime() + 10*24*60*60*1000;
         }

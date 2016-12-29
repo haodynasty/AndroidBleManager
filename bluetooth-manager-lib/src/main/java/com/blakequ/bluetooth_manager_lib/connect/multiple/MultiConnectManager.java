@@ -8,10 +8,11 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 
+import com.blakequ.bluetooth_manager_lib.BleManager;
 import com.blakequ.bluetooth_manager_lib.connect.BluetoothSubScribeData;
 import com.blakequ.bluetooth_manager_lib.connect.ConnectConfig;
 import com.blakequ.bluetooth_manager_lib.connect.ConnectState;
-import com.blakequ.bluetooth_manager_lib.util.LogUtils;
+import com.orhanobut.logger.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,6 +57,7 @@ public final class MultiConnectManager extends ConnectRequestQueue {
         super(context);
         bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         subscribeQueue = new ConcurrentLinkedQueue<BluetoothSubScribeData>();
+        BleManager.getBleParamsOptions();
     }
 
     public static MultiConnectManager getInstance(Context context){
@@ -78,7 +80,7 @@ public final class MultiConnectManager extends ConnectRequestQueue {
                 if (getDeviceState(device.getAddress()) == ConnectState.CONNECTED) {
                     newDevices.add(device);
                 }else {
-                    LogUtils.i(TAG, "Not exist connected device in queue "+device.getAddress());
+                    Logger.i("Not exist connected device in queue "+device.getAddress());
                 }
             }
             return newDevices;

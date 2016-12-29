@@ -13,7 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.blakequ.bluetooth_manager_lib.util.BluetoothUtils;
-import com.blakequ.bluetooth_manager_lib.util.LogUtils;
+import com.orhanobut.logger.Logger;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -126,7 +126,7 @@ public abstract class BluetoothConnectInterface {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
-            LogUtils.i(TAG, "onCharacteristicRead data status:" + GattError.parseConnectionError(status) + " " + characteristic.getUuid().toString());
+            Logger.i("onCharacteristicRead data status:" + GattError.parseConnectionError(status) + " " + characteristic.getUuid().toString());
             mOpratorQueue.nextOperator();
             if (getBluetoothGattCallback() != null) getBluetoothGattCallback().onCharacteristicRead(gatt, characteristic, status);
         }
@@ -134,7 +134,7 @@ public abstract class BluetoothConnectInterface {
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
-            LogUtils.i(TAG, "onCharacteristicWrite write status:" + GattError.parseConnectionError(status));
+            Logger.i("onCharacteristicWrite write status:" + GattError.parseConnectionError(status));
             mOpratorQueue.nextOperator();
             if (getBluetoothGattCallback() != null) getBluetoothGattCallback().onCharacteristicWrite(gatt, characteristic, status);
         }
@@ -144,20 +144,20 @@ public abstract class BluetoothConnectInterface {
             super.onConnectionStateChange(gatt, status, newState);
             //status=133是GATT_ERROR错误http://stackoverflow.com/questions/25330938/android-bluetoothgatt-status-133-register-callback
             //http://www.loverobots.cn/android-ble-connection-solution-bluetoothgatt-status-133.html
-            LogUtils.i(TAG, "onConnectionStateChange gattStatus=" + GattError.parseConnectionError(status) + " newStatus="
+            Logger.i("onConnectionStateChange gattStatus=" + GattError.parseConnectionError(status) + " newStatus="
                     + (newState == BluetoothProfile.STATE_CONNECTED ? "CONNECTED" : "DISCONNECTED"));
 
             //不同的手机当蓝牙关闭，设备断开（重启，远离）返回的状态不一样，newState都一样是DISCONNECTED，设备切换不会产生影响
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (newState == BluetoothProfile.STATE_CONNECTED) {//调用connect会调用
-                    LogUtils.i(TAG, "Connected to GATT server");
+                    Logger.i("Connected to GATT server");
                     // Attempts to discover services after successful connection.
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             onDeviceConnected(gatt);
                             if (gatt != null && !gatt.discoverServices()) {
-                                LogUtils.e(TAG, "onConnectionStateChange start service discovery fail! Thread:" + Thread.currentThread());
+                                Logger.e("onConnectionStateChange start service discovery fail! Thread:" + Thread.currentThread());
                             }
                         }
                     });
@@ -183,7 +183,7 @@ public abstract class BluetoothConnectInterface {
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorRead(gatt, descriptor, status);
-            LogUtils.i(TAG, "onDescriptorRead status=" + GattError.parseConnectionError(status));
+            Logger.i("onDescriptorRead status=" + GattError.parseConnectionError(status));
             mOpratorQueue.nextOperator();
             if (getBluetoothGattCallback() != null) getBluetoothGattCallback().onDescriptorRead(gatt, descriptor, status);
         }
@@ -191,7 +191,7 @@ public abstract class BluetoothConnectInterface {
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
-            LogUtils.i(TAG, "onDescriptorWrite status=" + GattError.parseConnectionError(status));
+            Logger.i("onDescriptorWrite status=" + GattError.parseConnectionError(status));
             mOpratorQueue.nextOperator();
             if (getBluetoothGattCallback() != null) getBluetoothGattCallback().onDescriptorWrite(gatt, descriptor, status);
         }
@@ -217,7 +217,7 @@ public abstract class BluetoothConnectInterface {
 
         @Override
         public void onServicesDiscovered(final BluetoothGatt gatt, int status) {
-            LogUtils.i(TAG, "onServicesDiscovered status=" + GattError.parseConnectionError(status));
+            Logger.i("onServicesDiscovered status=" + GattError.parseConnectionError(status));
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 //start subscribe data
                 runOnUiThread(new Runnable() {
@@ -230,7 +230,7 @@ public abstract class BluetoothConnectInterface {
                     }
                 });
             }else {
-                LogUtils.e(TAG, "onServicesDiscovered fail!");
+                Logger.e("onServicesDiscovered fail!");
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -248,7 +248,7 @@ public abstract class BluetoothConnectInterface {
      */
     public void startSubscribe(BluetoothGatt bluetoothGatt){
         if (bluetoothGatt == null){
-            LogUtils.e(TAG, "Fail to subscribe, BluetoothGatt is null");
+            Logger.e("Fail to subscribe, BluetoothGatt is null");
             return;
         }
         subscribe(bluetoothGatt.getDevice().getAddress());
@@ -262,19 +262,19 @@ public abstract class BluetoothConnectInterface {
     protected void subscribe(String address){
         BluetoothGatt mBluetoothGatt = getBluetoothGatt(address);
         if (mBluetoothGatt == null){
-            LogUtils.e(TAG, "can not subscribe to ble device info "+address);
+            Logger.e("can not subscribe to ble device info "+address);
             return;
         }
         mOpratorQueue.clean();
 
         if (isEmpty(getServiceUUID())){
-            LogUtils.e(TAG, "Service UUID is null");
+            Logger.e("Service UUID is null");
             return;
         }
 
         //check subscribe list
         if (getSubscribeDataQueue() == null && getSubscribeDataQueue().size() > 0){
-            LogUtils.e(TAG, "Subscribe BLE data is null, you must invoke addBluetoothSubscribeData to add data");
+            Logger.e("Subscribe BLE data is null, you must invoke addBluetoothSubscribeData to add data");
             return;
         }
 
@@ -289,7 +289,7 @@ public abstract class BluetoothConnectInterface {
                                 characteristic.setValue(data.getCharacteristicValue());
                                 mOpratorQueue.addOperator(characteristic, true);
                             }else{
-                                LogUtils.e(TAG, "Fail to write characteristic, not have write property , uuid:"+characteristic.getUuid()+" ,property:"+characteristic.getProperties());
+                                Logger.e("Fail to write characteristic, not have write property , uuid:"+characteristic.getUuid()+" ,property:"+characteristic.getProperties());
                             }
                             break;
                         case CHAR_READ:
@@ -300,7 +300,7 @@ public abstract class BluetoothConnectInterface {
                             if(BluetoothUtils.isCharacteristicRead(characteristic.getProperties())){
                                 mOpratorQueue.addOperator(characteristic, false);
                             }else{
-                                LogUtils.e(TAG, "Fail to read characteristic, not have read property , uuid:" + characteristic.getUuid() + " ,property:" + characteristic.getProperties());
+                                Logger.e("Fail to read characteristic, not have read property , uuid:" + characteristic.getUuid() + " ,property:" + characteristic.getProperties());
                             }
                             break;
                         case DESC_READ:
@@ -308,7 +308,7 @@ public abstract class BluetoothConnectInterface {
                             if (descriptor != null){
                                 mOpratorQueue.addOperator(descriptor, false);
                             }else {
-                                LogUtils.e(TAG, "Fail to get descriptor read uuid:"+data.getDescriptorUUID());
+                                Logger.e("Fail to get descriptor read uuid:"+data.getDescriptorUUID());
                             }
                             break;
                         case DESC_WRITE:
@@ -317,7 +317,7 @@ public abstract class BluetoothConnectInterface {
                                 descriptor2.setValue(data.getDescriptorValue());
                                 mOpratorQueue.addOperator(descriptor2, true);
                             }else {
-                                LogUtils.e(TAG, "Fail to get descriptor write uuid:"+data.getDescriptorUUID());
+                                Logger.e("Fail to get descriptor write uuid:"+data.getDescriptorUUID());
                             }
                             break;
                         case NOTIFY:
@@ -328,19 +328,19 @@ public abstract class BluetoothConnectInterface {
                                     descriptor3.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                                     mOpratorQueue.addOperator(descriptor3, true);
                                 }else {
-                                    LogUtils.e(TAG, "Fail to get notify descriptor uuid:"+data.getDescriptorUUID());
+                                    Logger.e("Fail to get notify descriptor uuid:"+data.getDescriptorUUID());
                                 }
                             }else{
-                                LogUtils.e(TAG, "Fail to notify characteristic, not have notify property , uuid:" + characteristic.getUuid() + " ,property:" + characteristic.getProperties());
+                                Logger.e("Fail to notify characteristic, not have notify property , uuid:" + characteristic.getUuid() + " ,property:" + characteristic.getProperties());
                             }
                             break;
                     }
                 }else {
-                    LogUtils.e(TAG, "Fail to get characteristic service uuid:"+data.getCharacteristicUUID());
+                    Logger.e("Fail to get characteristic service uuid:"+data.getCharacteristicUUID());
                 }
             }
         }else {
-            LogUtils.e(TAG, "Can not get gatt service uuid:"+getServiceUUID());
+            Logger.e("Can not get gatt service uuid:"+getServiceUUID());
         }
     }
 

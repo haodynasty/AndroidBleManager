@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 
-import com.blakequ.bluetooth_manager_lib.util.LogUtils;
+import com.orhanobut.logger.Logger;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -78,7 +78,7 @@ public class BluetoothOperatorQueue {
      */
     private synchronized boolean doOperator(SimpleEntity entity) {
         if (mBluetoothGatt == null){
-            LogUtils.e("BlueToothService", "do operator fail, bluetoothgatt is null");
+            Logger.e("do operator fail, bluetoothgatt is null");
             return false;
         }
         boolean result = true;
@@ -102,10 +102,10 @@ public class BluetoothOperatorQueue {
                 result = mBluetoothGatt.readDescriptor(desc);
             }
         } else {
-            LogUtils.d("BlueToothService", "do operator next");
+            Logger.d("do operator next");
             nextOperator();
         }
-        LogUtils.d("BlueToothService", "do operator result:"+result+" "+uuid);
+        Logger.d("do operator result:"+result+" "+uuid);
         return result;
     }
 

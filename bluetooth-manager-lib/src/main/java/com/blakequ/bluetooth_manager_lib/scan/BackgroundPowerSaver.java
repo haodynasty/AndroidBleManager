@@ -8,7 +8,7 @@ import android.os.Bundle;
 
 import com.blakequ.bluetooth_manager_lib.BleManager;
 import com.blakequ.bluetooth_manager_lib.BleParamsOptions;
-import com.blakequ.bluetooth_manager_lib.util.LogUtils;
+import com.orhanobut.logger.Logger;
 
 
 /**
@@ -19,7 +19,6 @@ import com.blakequ.bluetooth_manager_lib.util.LogUtils;
  */
 @TargetApi(18)
 public class BackgroundPowerSaver implements Application.ActivityLifecycleCallbacks {
-    private static final String TAG = "BackgroundPowerSaver";
     private int activeActivityCount = 0;
     private Context mContext;
     /**
@@ -64,7 +63,7 @@ public class BackgroundPowerSaver implements Application.ActivityLifecycleCallba
      */
     public BackgroundPowerSaver(Context context) {
         if (android.os.Build.VERSION.SDK_INT < 18) {
-            LogUtils.w(TAG, "BackgroundPowerSaver requires API 18 or higher.");
+            Logger.w("BackgroundPowerSaver requires API 18 or higher.");
             return;
         }
         ((Application)context.getApplicationContext()).registerActivityLifecycleCallbacks(this);
@@ -166,19 +165,19 @@ public class BackgroundPowerSaver implements Application.ActivityLifecycleCallba
     public void onActivityResumed(Activity activity) {
         activeActivityCount++;
         if (activeActivityCount < 1) {
-            LogUtils.d(TAG, "reset active activity count on resume.  It was " + activeActivityCount);
+            Logger.d("reset active activity count on resume.  It was " + activeActivityCount);
             activeActivityCount = 1;
         }
         BluetoothScanManager.getInstance(mContext).setBackgroundMode(false);
-        LogUtils.d(TAG, "activity resumed: "+activity+" active activities: "+activeActivityCount);
+        Logger.d("activity resumed: "+activity+" active activities: "+activeActivityCount);
     }
 
     @Override
     public void onActivityPaused(Activity activity) {
         activeActivityCount--;
-        LogUtils.d(TAG, "activity paused: "+activity+" active activities: "+activeActivityCount);
+        Logger.d("activity paused: "+activity+" active activities: "+activeActivityCount);
         if (activeActivityCount < 1) {
-            LogUtils.d(TAG, "setting background mode");
+            Logger.d("setting background mode");
             BluetoothScanManager.getInstance(mContext).setBackgroundMode(true);
         }
     }

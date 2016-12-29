@@ -5,11 +5,12 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.blakequ.bluetooth_manager_lib.BleManager;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanCallbackCompat;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanFilterCompat;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanResultCompat;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanSettingsCompat;
-import com.blakequ.bluetooth_manager_lib.util.LogUtils;
+import com.orhanobut.logger.Logger;
 
 import java.util.List;
 
@@ -43,7 +44,6 @@ import java.util.List;
 public final class BluetoothScanManager {
     private static BluetoothScanManager INSTANCE = null;
 
-    private static final String TAG = "BluetoothScanManager";
     //is background mode or not
     private boolean backgroundMode = false;
     private BackgroundPowerSaver mPowerSaver;
@@ -60,13 +60,14 @@ public final class BluetoothScanManager {
                 BackgroundPowerSaver.DEFAULT_FOREGROUND_BETWEEN_SCAN_PERIOD,
                 backgroundMode,
                 getScanCallback());
+        BleManager.getBleParamsOptions();
     }
 
     public static BluetoothScanManager getInstance(Context context){
         if (INSTANCE == null){
             synchronized (obj){
                 if (INSTANCE == null){
-                    LogUtils.d(TAG, "BluetoothScanManager instance creation");
+                    Logger.d("BluetoothScanManager instance creation");
                     INSTANCE = new BluetoothScanManager(context);
                 }
             }
@@ -186,7 +187,7 @@ public final class BluetoothScanManager {
      */
     public void setBackgroundMode(boolean backgroundMode) {
         if (android.os.Build.VERSION.SDK_INT < 18) {
-            LogUtils.w(TAG, "Not supported prior to API 18.  Method invocation will be ignored");
+            Logger.w("Not supported prior to API 18.  Method invocation will be ignored");
         }
         if (backgroundMode != this.backgroundMode) {
             this.backgroundMode = backgroundMode;

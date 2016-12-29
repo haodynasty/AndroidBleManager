@@ -21,7 +21,7 @@ import com.blakequ.bluetooth_manager_lib.connect.ConnectState;
 import com.blakequ.bluetooth_manager_lib.connect.ConnectStateListener;
 import com.blakequ.bluetooth_manager_lib.connect.multiple.MultiConnectManager;
 import com.blakequ.bluetooth_manager_lib.device.BluetoothLeDevice;
-import com.blakequ.bluetooth_manager_lib.util.LogUtils;
+import com.orhanobut.logger.Logger;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -86,7 +86,7 @@ public class ConnectManyFragment extends Fragment{
                             .setAction("Remove", new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    LogUtils.d("ConnectManyFragment", "remove device form queue "+device.getAddress());
+                                    Logger.d("remove device form queue "+device.getAddress());
                                     mAdapter.removeDevice(device.getAddress());
                                     multiConnectManager.removeDeviceFromQueue(device.getAddress());
                                 }

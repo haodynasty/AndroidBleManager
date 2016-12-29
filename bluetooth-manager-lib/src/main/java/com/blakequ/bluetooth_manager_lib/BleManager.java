@@ -5,12 +5,14 @@ import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.blakequ.bluetooth_manager_lib.connect.BluetoothConnectManager;
 import com.blakequ.bluetooth_manager_lib.connect.ConnectConfig;
 import com.blakequ.bluetooth_manager_lib.connect.multiple.MultiConnectManager;
 import com.blakequ.bluetooth_manager_lib.scan.BluetoothScanManager;
-import com.blakequ.bluetooth_manager_lib.util.LogUtils;
+import com.orhanobut.logger.Logger;
+import com.orhanobut.logger.Settings;
 
 /**
  * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
@@ -26,7 +28,7 @@ import com.blakequ.bluetooth_manager_lib.util.LogUtils;
  * date     : 2016/8/17 11:02 <br>
  * last modify author : <br>
  * version : 1.0 <br>
- * description: 能实现扫描管理和连接管理
+ * description: scan and connect ble device
  */
 @TargetApi(18)
 public final class BleManager {
@@ -36,7 +38,7 @@ public final class BleManager {
 
     public static BleParamsOptions getBleParamsOptions(){
         if (configOptions == null){
-            configOptions = BleParamsOptions.createDefault();
+            setBleParamsOptions(BleParamsOptions.createDefault());
         }
         return configOptions;
     }
@@ -49,7 +51,12 @@ public final class BleManager {
         if (options != null){
             configOptions = options;
             ConnectConfig.maxConnectDeviceNum = options.getMaxConnectDeviceNum();
-            LogUtils.setDebugLog(options.isDebugMode());
+            Logger.uprootAll();
+            Logger.plantDefaultDebugTree(new Settings()
+                    .isShowMethodLink(true)
+                    .isShowThreadInfo(false)
+                    .setMethodOffset(0)
+                    .setLogPriority(options.isDebugMode() ? Log.VERBOSE : Log.ASSERT));
         }
     }
 
@@ -106,16 +113,5 @@ public final class BleManager {
             throw new BleNotAvailableException("Bluetooth LE not supported by this device");
         }
         return true;
-    }
-
-    /**
-     * is debug mode, you can set like setLogDebugMode(BuildConfig.DEBUG),and release version will close log,
-     * and if you want close log then set setLogDebugMode(false)
-     * <p><em>new verison you should using {@link #setBleParamsOptions(BleParamsOptions)} to set params</em></p>
-     * @param isDebugMode
-     */
-    @Deprecated
-    public static void setLogDebugMode(boolean isDebugMode){
-        LogUtils.setDebugLog(isDebugMode);
     }
 }
