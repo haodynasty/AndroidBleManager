@@ -2,6 +2,7 @@ package com.blakequ.bluetooth_manager_lib.connect.multiple;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -94,11 +95,23 @@ public final class MultiConnectManager extends ConnectRequestQueue {
     }
 
     /**
-     * add subscribe data while read or write characteristic(or descriptor) after discover service
+     * add subscribe data while read or write characteristic(or descriptor) after discover service.
+     * if each device using different config, you should invoke {@link #cleanSubscribeData()} to clean queue before using {@link #startSubscribe(BluetoothGatt)}
      * @param data
+     * @see #cleanSubscribeData()
+     * @see #startSubscribe(BluetoothGatt)
+     * @see #setServiceUUID(String)
      */
     public void addBluetoothSubscribeData(BluetoothSubScribeData data){
         subscribeQueue.add(data);
+    }
+
+    /**
+     * clean subscribe list
+     * @see #addBluetoothSubscribeData(BluetoothSubScribeData)
+     */
+    public void cleanSubscribeData(){
+        subscribeQueue.clear();
     }
 
     /**
