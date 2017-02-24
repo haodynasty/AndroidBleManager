@@ -7,6 +7,7 @@
 - 使用简单快捷，一键集成
 - 经过实际场景测试，实际产品的使用
 
+[![License][licence_svg]][licence_url]
 [![Build Status](https://travis-ci.org/haodynasty/AndroidBleManager.svg?branch=master)](https://travis-ci.org/haodynasty/AndroidBleManager)
 [![Download][bintray_svg]][bintray_url]
 
@@ -371,3 +372,5 @@ ConnectConfig.updateReconnectSpaceTime(4000); //间隔重连时间
 
 [bintray_svg]: https://api.bintray.com/packages/haodynasty/maven/AndroidBleManager/images/download.svg
 [bintray_url]: https://bintray.com/haodynasty/maven/AndroidBleManager/_latestVersion
+[licence_svg]: https://img.shields.io/badge/license-Apache%202-green.svg
+[licence_url]: https://www.apache.org/licenses/LICENSE-2.0

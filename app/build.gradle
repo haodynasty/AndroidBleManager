@@ -27,19 +27,20 @@ android {
     }
 
     //签名配置
-    signingConfigs {
-        release {
-            storeFile file('blakequ.jks')
+//    signingConfigs {
+//        release {
+//            storeFile file('blakequ.jks')
             //this is for gradle.properties
 //            storePassword project.hasProperty("KEYSTORE_PASS") ? KEYSTORE_PASS : System.getenv("KEYSTORE_PASS")
 //            keyAlias project.hasProperty("ALIAS_NAME") ? ALIAS_NAME : System.getenv("ALIAS_NAME")
 //            keyPassword project.hasProperty("ALIAS_PASS") ? ALIAS_PASS : System.getenv("ALIAS_PASS")
-            //this is for local.properties
-            storePassword getLocalProperty("KEYSTORE_PASS") ? getLocalProperty("KEYSTORE_PASS") : System.getenv("KEYSTORE_PASS")
-            keyAlias getLocalProperty("ALIAS_NAME") ? getLocalProperty("ALIAS_NAME") : System.getenv("ALIAS_NAME")
-            keyPassword getLocalProperty("ALIAS_PASS") ? getLocalProperty("ALIAS_PASS") : System.getenv("ALIAS_PASS")
-        }
-    }
+
+            //this is for local.properties， using this
+//            storePassword getLocalProperty("KEYSTORE_PASS") ? getLocalProperty("KEYSTORE_PASS") : System.getenv("KEYSTORE_PASS")
+//            keyAlias getLocalProperty("ALIAS_NAME") ? getLocalProperty("ALIAS_NAME") : System.getenv("ALIAS_NAME")
+//            keyPassword getLocalProperty("ALIAS_PASS") ? getLocalProperty("ALIAS_PASS") : System.getenv("ALIAS_PASS")
+//        }
+//    }
 
     buildTypes {
         debug {
@@ -50,17 +51,17 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
-            //自定义apk安装包名
-            applicationVariants.all { variant ->
-                variant.mergedFlavor.versionCode = gitVersionCode()
-                variant.mergedFlavor.versionName = gitVersionTag()
-                variant.outputs.each { output ->
-                    output.outputFile = new File(
-                            output.outputFile.parent + "/${variant.buildType.name}",
-                            "androidblemanager-${variant.buildType.name}-${variant.versionName}-${releaseTime()}.apk".toLowerCase())
-                }
-            }
+//            signingConfig signingConfigs.release
+//            //自定义apk安装包名
+//            applicationVariants.all { variant ->
+//                variant.mergedFlavor.versionCode = gitVersionCode()
+//                variant.mergedFlavor.versionName = gitVersionTag()
+//                variant.outputs.each { output ->
+//                    output.outputFile = new File(
+//                            output.outputFile.parent + "/${variant.buildType.name}",
+//                            "androidblemanager-${variant.buildType.name}-${variant.versionName}-${releaseTime()}.apk".toLowerCase())
+//                }
+//            }
         }
     }
 
@@ -82,6 +83,6 @@ dependencies {
     compile 'com.github.hotchemi:permissionsdispatcher:2.1.3'
     apt 'com.github.hotchemi:permissionsdispatcher-processor:2.1.3'
 
-//    compile project(':bluetooth-manager-lib')
-    compile 'com.blakequ.androidblemanager:bluetooth-manager-lib:2.1.3'
+    compile project(':bluetooth-manager-lib')
+//    compile 'com.blakequ.androidblemanager:bluetooth-manager-lib:2.1.3'
 }
