@@ -13,6 +13,11 @@ android:
   - extra-android-m2repository
   - extra-android-support
 
+licenses:
+    - 'android-sdk-preview-license-.+'
+    - 'android-sdk-license-.+'
+    - 'google-gdk-license-.+'
+
 before_install:
 #- openssl aes-256-cbc -K $encrypted_217a4fe513fa_key -iv $encrypted_217a4fe513fa_iv
 #  -in app/blakequ.jks.enc -out app/blakequ.jks -d
