@@ -8,7 +8,7 @@
 - 经过实际场景测试，实际产品的使用
 
 [![License][licence_svg]][licence_url]
-[![Build Status](https://travis-ci.org/haodynasty/AndroidBleManager.svg?branch=master)](https://travis-ci.org/haodynasty/AndroidBleManager)
+<!-- [![Build Status](https://travis-ci.org/haodynasty/AndroidBleManager.svg?branch=master)](https://travis-ci.org/haodynasty/AndroidBleManager) -->
 [![Download][bintray_svg]][bintray_url]
 
 # 使用
