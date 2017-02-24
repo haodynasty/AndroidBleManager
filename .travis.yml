@@ -1,6 +1,7 @@
 #help:https://github.com/nukc/how-to-use-travis-ci
 language: android
 sudo: false
+jdk: oraclejdk8
 
 android:
   components:
