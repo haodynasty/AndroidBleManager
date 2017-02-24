@@ -5,7 +5,7 @@ apply plugin:'im.fir.plugin.gradle'
 
 fir{
     //必填 上传 fir.im apk 字段，否则无法上传 APP 到 fir.im
-    apiToken getLocalProperty("FIR_TOKEN")
+    apiToken hasLocalProperty("FIR_TOKEN") ? getLocalProperty("FIR_TOKEN") : System.getenv("FIR_TOKEN")
     //可选 上传fir.im 中显示的changelog
     changeLog gitLogFirstCommit()//getLocalProperty("UPDATE_LOG")
 }
@@ -20,8 +20,8 @@ android {
         targetSdkVersion TARGET_SDK_VERSION
         versionCode 1
         versionName "1.0"
-        buildConfigField "String", "FIR_TOKEN", getLocalProperty("FIR_TOKEN_STRING")
-        buildConfigField "String", "FIR_ID", getLocalProperty("FIR_ID_STRING")
+        buildConfigField "String", "FIR_TOKEN", hasLocalProperty("FIR_TOKEN_STRING") ? getLocalProperty("FIR_TOKEN_STRING") : System.getenv("FIR_TOKEN")
+        buildConfigField "String", "FIR_ID", hasLocalProperty("FIR_ID_STRING") ? getLocalProperty("FIR_ID_STRING") : System.getenv("FIR_ID")
         //设置输出app默认前缀名称
         //project.ext.set("archivesBaseName", "BleManager_v" + versionName + "_"+today);
     }

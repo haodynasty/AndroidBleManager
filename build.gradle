@@ -9,6 +9,13 @@ def getLocalProperty(String key) {
     return properties.getProperty(key)
 }
 
+def hasLocalProperty(String key) {
+    if (getLocalProperty(key) != null) {
+        return true
+    }
+    return false
+}
+
 def localPropertiesFile() {
     return project.rootProject.file('local.properties');
 }
