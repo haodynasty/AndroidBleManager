@@ -3,13 +3,13 @@
 # AndroidBleManager
 > 强大的蓝牙工具库
 
+<!-- [![Build Status](https://travis-ci.org/haodynasty/AndroidBleManager.svg?branch=master)](https://travis-ci.org/haodynasty/AndroidBleManager) -->
+[![License][licence_svg]][licence_url]
+[![Download][bintray_svg]][bintray_url]
+
 - 集成Android蓝牙（支持Ibeacon）扫描，单个设备连接，多设备同时连接，连接Gatt服务扫描及属性读取封装
 - 使用简单快捷，一键集成
 - 经过实际场景测试，实际产品的使用
-
-[![License][licence_svg]][licence_url]
-<!-- [![Build Status](https://travis-ci.org/haodynasty/AndroidBleManager.svg?branch=master)](https://travis-ci.org/haodynasty/AndroidBleManager) -->
-[![Download][bintray_svg]][bintray_url]
 
 # 使用
 将下面的代码增加到build.gradle文件中,${latest.version} is [![Download][bintray_svg]][bintray_url]
@@ -179,8 +179,8 @@ connectManager.addBluetoothSubscribeData(
 connectManager.addBluetoothSubscribeData(
                         new BluetoothSubScribeData.Builder().setCharacteristicWrite(characteristic.getUuid(), byteData).build();
 //还有读写descriptor
-//start descriptor(注意，在使用时当回调onServicesDiscovered成功时会自动调用该方法，所以只需要在连接之前完成1,3步即可)
-connectManager.startSubscribe(gatt);
+//start subscribe(注意，在使用时当回调onServicesDiscovered成功时会自动调用该方法，所以只需要在连接之前完成1,3步即可),如果需要单独读写某些属性，则可以单独调用该方法，并且同样使用步骤2,3然后调用该方法手动启动订阅
+boolean isSuccess = connectManager.startSubscribe(gatt); //返回是否成功实现订阅
 ```
 
 - 连接与断开

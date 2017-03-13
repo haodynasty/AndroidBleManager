@@ -164,7 +164,7 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
                 );
             }
             //start descriptor
-            connectManager.startSubscribe(gatt);
+            boolean isSuccess = connectManager.startSubscribe(gatt);
         }else{
             setOperatorEnable(false);
         }
@@ -192,7 +192,7 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
                 connectManager.cleanSubscribeData();
                 connectManager.addBluetoothSubscribeData(
                         new BluetoothSubScribeData.Builder().setCharacteristicRead(characteristic.getUuid()).build());
-                connectManager.startSubscribe(gatt);
+                boolean isSuccess = connectManager.startSubscribe(gatt);
                 break;
             case R.id.char_write:
                 displayDataDialog();
@@ -204,7 +204,7 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
                 connectManager.addBluetoothSubscribeData(
                         new BluetoothSubScribeData.Builder().setCharacteristicNotify(characteristic.getUuid()).build()
                 );
-                connectManager.startSubscribe(gatt);
+                boolean isSuccess2 = connectManager.startSubscribe(gatt);
                 break;
         }
     }

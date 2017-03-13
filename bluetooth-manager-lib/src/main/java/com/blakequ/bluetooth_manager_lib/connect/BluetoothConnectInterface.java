@@ -244,38 +244,41 @@ public abstract class BluetoothConnectInterface {
 
     /**
      * start subscribe data, add data to subscribe list before invoke this method
+     * <p>You should invoke this method after onServicesDiscovered, otherwise can not find service<p/>
      * @param bluetoothGatt
+     * @return boolean is success start read or write character
      */
-    public void startSubscribe(BluetoothGatt bluetoothGatt){
+    public boolean startSubscribe(BluetoothGatt bluetoothGatt){
         if (bluetoothGatt == null){
             Logger.e("Fail to subscribe, BluetoothGatt is null");
-            return;
+            return false;
         }
-        subscribe(bluetoothGatt.getDevice().getAddress());
+        boolean isSuccess = subscribe(bluetoothGatt.getDevice().getAddress());
         mOpratorQueue.start(bluetoothGatt);
+        return isSuccess;
     }
 
     /**
      * 订阅蓝牙设备通知及读写数据
      * @return
      */
-    protected void subscribe(String address){
+    protected boolean subscribe(String address){
         BluetoothGatt mBluetoothGatt = getBluetoothGatt(address);
         if (mBluetoothGatt == null){
             Logger.e("can not subscribe to ble device info "+address);
-            return;
+            return false;
         }
         mOpratorQueue.clean();
 
         if (isEmpty(getServiceUUID())){
             Logger.e("Service UUID is null");
-            return;
+            return false;
         }
 
         //check subscribe list
         if (getSubscribeDataQueue() == null && getSubscribeDataQueue().size() > 0){
             Logger.e("Subscribe BLE data is null, you must invoke addBluetoothSubscribeData to add data");
-            return;
+            return false;
         }
 
         BluetoothGattService gattService = mBluetoothGatt.getService(UUID.fromString(getServiceUUID()));
@@ -341,7 +344,9 @@ public abstract class BluetoothConnectInterface {
             }
         }else {
             Logger.e("Can not get gatt service uuid:"+getServiceUUID());
+            return false;
         }
+        return true;
     }
 
     /**
