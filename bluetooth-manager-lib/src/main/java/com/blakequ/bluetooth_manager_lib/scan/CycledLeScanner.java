@@ -134,11 +134,12 @@ public class CycledLeScanner {
             Logger.w("Not supported prior to API 18.  Method invocation will be ignored");
             return;
         }
+
+        this.scanPeriod = scanPeriod;
+        this.betweenScanPeriod = betweenScanPeriod;
         if (backgroundFlag != mBackgroundFlag) {
             Logger.d("restart polling task scanPeriod:" + scanPeriod + " betweenScanPeriod:" + betweenScanPeriod + " backgroundFlag:" + backgroundFlag + " mode:" + mBackgroundFlag);
             mBackgroundFlag = backgroundFlag;
-            this.scanPeriod = scanPeriod;
-            this.betweenScanPeriod = betweenScanPeriod;
             long now = SystemClock.elapsedRealtime();
 
             //update next scan start time（在等待开始扫描时修正下一次开始时间,提前开始）
@@ -191,16 +192,18 @@ public class CycledLeScanner {
             return;
         }
 
-        if (deferScanIfNeeded()){
-            if (!isStartNow){
-                return;
-            }else{
-                Logger.i("ScanDevice: Scan right now!");
-                isStartNow = false;
-            }
-        }
 
         if (enable) {
+            //is delay scan
+            if (deferScanIfNeeded()){
+                if (!isStartNow){
+                    return;
+                }else{
+                    Logger.i("ScanDevice: Scan right now!");
+                    isStartNow = false;
+                }
+            }
+
             if (mScanning) {
                 Logger.d("ScanDevice: Scanning is running now !");
                 return;
@@ -249,12 +252,15 @@ public class CycledLeScanner {
             if (isPrintCycleTime){
                 Logger.d("Waiting to stop scan cycle for another " + millisecondsUntilStop + " milliseconds");
             }
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    scheduleScanStop();
-                }
-            }, millisecondsUntilStop > 1000 ? 1000 : millisecondsUntilStop);
+
+            if (!isPauseScan) {
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        scheduleScanStop();
+                    }
+                }, millisecondsUntilStop > 1000 ? 1000 : millisecondsUntilStop);
+            }
         } else {
             Logger.d("Stop cycle scan");
             stopScan();
@@ -262,9 +268,6 @@ public class CycledLeScanner {
     }
 
     private void stopScan(){
-        if (scanOverListener != null){
-            scanOverListener.onScanOver();
-        }
         if (mScanning) {
             BluetoothAdapter mAdapter = mBluetoothUtils.getBluetoothAdapter();
             if (mAdapter != null && mBluetoothUtils.isBluetoothIsEnable()) {
@@ -285,6 +288,10 @@ public class CycledLeScanner {
             }
         }
         mScanning = false;
+        //// FIXME: 2017/6/22 将其调整到mScanning后面
+        if (scanOverListener != null){
+            scanOverListener.onScanOver();
+        }
     }
 
     /**
