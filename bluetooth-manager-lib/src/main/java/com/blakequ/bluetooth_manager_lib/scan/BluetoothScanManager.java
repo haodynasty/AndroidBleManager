@@ -150,6 +150,8 @@ public final class BluetoothScanManager {
      * @see #startCycleScan()
      */
     public void startScanNow(){
+        // FIXME: 2017/6/22 modify config not enable first time
+        cycledLeScanner.setBackgroundMode(mPowerSaver.getScanPeriod(), mPowerSaver.getBetweenScanPeriod(), backgroundMode);
         cycledLeScanner.startScanNow();
     }
 
