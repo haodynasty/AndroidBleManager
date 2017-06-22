@@ -35,11 +35,12 @@ public class BluetoothLeDeviceStore {
     }
 
     public void addDevice(final BluetoothLeDevice device) {
-        if (mDeviceMap.containsKey(device.getAddress())) {
-            mDeviceMap.get(device.getAddress()).updateRssiReading(device.getTimestamp(), device.getRssi());
-        } else {
-            mDeviceMap.put(device.getAddress(), device);
-        }
+        //if (mDeviceMap.containsKey(device.getAddress())) {
+        //    mDeviceMap.get(device.getAddress()).updateRssiReading(device.getTimestamp(), device.getRssi());
+        //} else {
+        //    mDeviceMap.put(device.getAddress(), device);
+        //}
+        mDeviceMap.put(device.getAddress(), device);
     }
 
     public void clear() {

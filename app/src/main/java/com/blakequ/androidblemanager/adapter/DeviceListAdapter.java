@@ -5,13 +5,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.blakequ.androidblemanager.R;
+import com.blakequ.androidblemanager.bluetooth.BluetoothDataParserUtils;
 import com.blakequ.androidblemanager.utils.Constants;
 import com.blakequ.bluetooth_manager_lib.device.BeaconType;
 import com.blakequ.bluetooth_manager_lib.device.BeaconUtils;
 import com.blakequ.bluetooth_manager_lib.device.BluetoothLeDevice;
 import com.blakequ.bluetooth_manager_lib.device.ibeacon.IBeaconDevice;
+import java.util.Arrays;
 
 /**
  * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
@@ -54,6 +55,7 @@ public class DeviceListAdapter extends BaseArrayListAdapter<BluetoothLeDevice>{
             viewHolder.ibeaconTxPower = (TextView) view.findViewById(R.id.ibeacon_tx_power);
             viewHolder.ibeaconSection = view.findViewById(R.id.ibeacon_section);
             viewHolder.ibeaconDistanceDescriptor = (TextView) view.findViewById(R.id.ibeacon_distance_descriptor);
+            viewHolder.deviceRecord = (TextView) view.findViewById(R.id.ibeacon_scan_record);
             view.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) view.getTag();
@@ -97,7 +99,29 @@ public class DeviceListAdapter extends BaseArrayListAdapter<BluetoothLeDevice>{
                         Constants.TIME_FORMAT, new java.util.Date(device.getTimestamp())));
         viewHolder.deviceAddress.setText(device.getAddress());
         viewHolder.deviceRssi.setText(rssiString + " / " + runningAverageRssiString);
+
+        //add for test temp
+        byte[] scan = device.getScanRecord();
+        if (scan != null && scan.length > 0 && scan.length >30){
+            byte[] data = Arrays.copyOfRange(scan, 9, 25);
+            viewHolder.deviceRecord.setVisibility(View.VISIBLE);
+            String val = BluetoothDataParserUtils.toString(data) + " Distance:" + String.format("%.2f", calculateAccuracy(-59, device.getRssi()))+"m";
+            viewHolder.deviceRecord.setText(val);
+        }
         return view;
+    }
+
+    public double calculateAccuracy(final int txPower, final double rssi) {
+        if (rssi == 0) {
+            return 0; // if we cannot determine accuracy, return -1.
+        }
+
+        final double ratio = rssi * 1.0 / txPower;
+        if (ratio < 1.0) {
+            return Math.pow(ratio, 10);
+        } else {
+            return (0.89976) * Math.pow(ratio, 7.7095) + 0.111;
+        }
     }
 
     static class ViewHolder {
@@ -113,5 +137,6 @@ public class DeviceListAdapter extends BaseArrayListAdapter<BluetoothLeDevice>{
         TextView deviceLastUpdated;
         View ibeaconSection;
         ImageView deviceIcon;
+        TextView deviceRecord;
     }
 }

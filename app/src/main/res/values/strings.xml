@@ -90,6 +90,7 @@
     <string name="label_uuid">UUID:</string>
     <string name="label_updated">Updated:</string>
     <string name="label_decriptor">Descriptor:</string>
+    <string name="label_record">Record:</string>
 
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>

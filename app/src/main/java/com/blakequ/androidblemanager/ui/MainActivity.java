@@ -23,10 +23,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import com.blakequ.androidblemanager.BuildConfig;
 import com.blakequ.androidblemanager.R;
 import com.blakequ.androidblemanager.adapter.FragmentPageAdapter;
+import com.blakequ.androidblemanager.bluetooth.BluetoothDataParserUtils;
 import com.blakequ.androidblemanager.containers.BluetoothLeDeviceStore;
 import com.blakequ.androidblemanager.event.UpdateEvent;
 import com.blakequ.androidblemanager.service.AppUpgradeService;
@@ -35,6 +37,7 @@ import com.blakequ.androidblemanager.ui.connect.ConnectOneFragment;
 import com.blakequ.androidblemanager.ui.scan.ScanFragment;
 import com.blakequ.androidblemanager.utils.BluetoothUtils;
 import com.blakequ.androidblemanager.utils.Constants;
+import com.blakequ.androidblemanager.utils.FileUtils;
 import com.blakequ.androidblemanager.utils.FirCheckUtils;
 import com.blakequ.androidblemanager.utils.IntentUtils;
 import com.blakequ.androidblemanager.utils.LocationUtils;
@@ -52,16 +55,13 @@ import com.blakequ.bluetooth_manager_lib.scan.ScanOverListener;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanCallbackCompat;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanResultCompat;
 import com.orhanobut.logger.Logger;
-
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.OnNeverAskAgain;
 import permissions.dispatcher.OnPermissionDenied;
@@ -91,6 +91,8 @@ public class MainActivity extends ToolbarActivity
     private String[] permissionList = {Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN,
             Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    private StringBuilder mStringBuilder;
+    private File saveFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +102,7 @@ public class MainActivity extends ToolbarActivity
         BleManager.setBleParamsOptions(new BleParamsOptions.Builder()
                 .setBackgroundBetweenScanPeriod(5 * 60 * 1000)
                 .setBackgroundScanPeriod(10000)
-                .setForegroundBetweenScanPeriod(5000)
+                .setForegroundBetweenScanPeriod(2000)
                 .setForegroundScanPeriod(10000)
                 .setDebugMode(BuildConfig.DEBUG)
                 .setMaxConnectDeviceNum(5)
@@ -146,6 +148,8 @@ public class MainActivity extends ToolbarActivity
         initScan();
 
         updateFirAppUpdate();
+        String tmp = FileUtils.getOutCacheDir(getApplicationContext()).getPath()+"/result_data.txt";
+        saveFile = new File(tmp);
     }
 
     @Override
@@ -256,6 +260,7 @@ public class MainActivity extends ToolbarActivity
                             mDeviceStore.addDevice(result.getLeDevice());
                         } else if (filterName.equals(result.getScanRecord().getDeviceName())) {
                             mDeviceStore.addDevice(result.getLeDevice());
+                          saveFileLog(result.getDevice().getAddress(), result.getScanRecord().getBytes());
                         }
                     }
                 } else {
@@ -265,6 +270,22 @@ public class MainActivity extends ToolbarActivity
             }
         });
     }
+
+  private void saveFileLog(String mac, byte[] record){
+    if (record != null && record.length > 0 && record.length >30){
+      byte[] data = Arrays.copyOfRange(record, 9, 25);
+      String str = BluetoothDataParserUtils.toString(data);
+
+      if (mStringBuilder == null) mStringBuilder = new StringBuilder();
+      mStringBuilder.append(mac+" ");
+      mStringBuilder.append(str + "\r\n");
+      if (mStringBuilder.toString().length() >= 1024*10){
+        FileUtils.write(saveFile, mStringBuilder.toString(), true);
+          mStringBuilder.delete(0, mStringBuilder.length());
+        System.out.println("---save to file"+saveFile.getPath());
+      }
+    }
+  }
 
     public void startScan(){
         if (checkPermission()){

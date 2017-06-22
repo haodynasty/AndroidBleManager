@@ -90,6 +90,14 @@
                 android:textSize="12sp"/>
         </GridLayout>
 
+        <TextView
+            android:id="@+id/ibeacon_scan_record"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingRight="5dp"
+            android:visibility="gone"
+            android:textSize="12sp"/>
+
         <GridLayout
             android:id="@+id/ibeacon_section"
             android:layout_width="fill_parent"
@@ -198,6 +206,7 @@
                 android:layout_columnSpan="3"
                 android:paddingRight="5dp"
                 android:textSize="12sp"/>
+
         </GridLayout>
     </LinearLayout>
 

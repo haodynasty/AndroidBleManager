@@ -10,7 +10,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
-
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import com.blakequ.androidblemanager.R;
 import com.blakequ.androidblemanager.adapter.DeviceListAdapter;
 import com.blakequ.androidblemanager.containers.BluetoothLeDeviceStore;
@@ -20,13 +21,9 @@ import com.blakequ.androidblemanager.utils.BluetoothUtils;
 import com.blakequ.androidblemanager.utils.Constants;
 import com.blakequ.androidblemanager.utils.PreferencesUtils;
 import com.blakequ.bluetooth_manager_lib.device.BluetoothLeDevice;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
 
 /**
  * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
@@ -124,6 +121,7 @@ public class ScanFragment extends Fragment implements AdapterView.OnItemClickLis
                 break;
         }
     }
+
 
     @Nullable
     @Override
