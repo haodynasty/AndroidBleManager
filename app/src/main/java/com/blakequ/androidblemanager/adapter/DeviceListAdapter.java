@@ -6,13 +6,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.blakequ.androidblemanager.R;
-import com.blakequ.androidblemanager.bluetooth.BluetoothDataParserUtils;
 import com.blakequ.androidblemanager.utils.Constants;
 import com.blakequ.bluetooth_manager_lib.device.BeaconType;
 import com.blakequ.bluetooth_manager_lib.device.BeaconUtils;
 import com.blakequ.bluetooth_manager_lib.device.BluetoothLeDevice;
 import com.blakequ.bluetooth_manager_lib.device.ibeacon.IBeaconDevice;
-import java.util.Arrays;
 
 /**
  * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
@@ -100,14 +98,14 @@ public class DeviceListAdapter extends BaseArrayListAdapter<BluetoothLeDevice>{
         viewHolder.deviceAddress.setText(device.getAddress());
         viewHolder.deviceRssi.setText(rssiString + " / " + runningAverageRssiString);
 
-        //add for test temp
-        byte[] scan = device.getScanRecord();
-        if (scan != null && scan.length > 0 && scan.length >30){
-            byte[] data = Arrays.copyOfRange(scan, 9, 25);
-            viewHolder.deviceRecord.setVisibility(View.VISIBLE);
-            String val = BluetoothDataParserUtils.toString(data) + " Distance:" + String.format("%.2f", calculateAccuracy(-59, device.getRssi()))+"m";
-            viewHolder.deviceRecord.setText(val);
-        }
+        //add for test
+        //byte[] scan = device.getScanRecord();
+        //if (scan != null && scan.length > 0 && scan.length >30){
+        //    byte[] data = Arrays.copyOfRange(scan, 9, 25);
+        //    viewHolder.deviceRecord.setVisibility(View.VISIBLE);
+        //    String val = BluetoothDataParserUtils.toString(data) + " Distance:" + String.format("%.2f", calculateAccuracy(-59, device.getRssi()))+"m";
+        //    viewHolder.deviceRecord.setText(val);
+        //}
         return view;
     }
 

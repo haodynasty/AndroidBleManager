@@ -71,6 +71,45 @@
                 android:max="100"
                 android:progress="30"
                 />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:background="@android:color/holo_blue_dark"/>
+
+            <TextView
+                android:id="@+id/filter_tv_scan"
+                android:layout_marginTop="12dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:text="Scan Period: 10 seconds"/>
+            <SeekBar
+                android:layout_marginTop="8dp"
+                android:id="@+id/filter_et_scan_period"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="120"
+                android:progress="10"
+                />
+
+            <TextView
+                android:id="@+id/filter_tv_pause"
+                android:layout_marginTop="12dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:text="Pause Period: 5 seconds"/>
+            <SeekBar
+                android:layout_marginTop="8dp"
+                android:id="@+id/filter_et_pause_period"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="60"
+                android:progress="5"
+                />
         </LinearLayout>
         <ImageView
             android:id="@+id/diableFlag"

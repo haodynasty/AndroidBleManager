@@ -26,9 +26,9 @@ import android.widget.Toast;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import com.blakequ.androidblemanager.BuildConfig;
+import com.blakequ.androidblemanager.ConstValue;
 import com.blakequ.androidblemanager.R;
 import com.blakequ.androidblemanager.adapter.FragmentPageAdapter;
-import com.blakequ.androidblemanager.bluetooth.BluetoothDataParserUtils;
 import com.blakequ.androidblemanager.containers.BluetoothLeDeviceStore;
 import com.blakequ.androidblemanager.event.UpdateEvent;
 import com.blakequ.androidblemanager.service.AppUpgradeService;
@@ -45,9 +45,7 @@ import com.blakequ.androidblemanager.utils.PreferencesUtils;
 import com.blakequ.androidblemanager.widget.MyAlertDialog;
 import com.blakequ.androidblemanager.widget.ScrollViewPager;
 import com.blakequ.bluetooth_manager_lib.BleManager;
-import com.blakequ.bluetooth_manager_lib.BleParamsOptions;
 import com.blakequ.bluetooth_manager_lib.connect.BluetoothConnectManager;
-import com.blakequ.bluetooth_manager_lib.connect.ConnectConfig;
 import com.blakequ.bluetooth_manager_lib.connect.ConnectState;
 import com.blakequ.bluetooth_manager_lib.connect.multiple.MultiConnectManager;
 import com.blakequ.bluetooth_manager_lib.scan.BluetoothScanManager;
@@ -57,7 +55,6 @@ import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanResultCompat;
 import com.orhanobut.logger.Logger;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -99,18 +96,7 @@ public class MainActivity extends ToolbarActivity
         super.onCreate(savedInstanceState);
         EventBus.getDefault().register(this);
         ButterKnife.bind(this);
-        BleManager.setBleParamsOptions(new BleParamsOptions.Builder()
-                .setBackgroundBetweenScanPeriod(5 * 60 * 1000)
-                .setBackgroundScanPeriod(10000)
-                .setForegroundBetweenScanPeriod(2000)
-                .setForegroundScanPeriod(10000)
-                .setDebugMode(BuildConfig.DEBUG)
-                .setMaxConnectDeviceNum(5)
-                .setReconnectBaseSpaceTime(8000)
-                .setReconnectMaxTimes(4)
-                .setReconnectStrategy(ConnectConfig.RECONNECT_FIXED_TIME)
-                .setReconnectedLineToExponentTimes(5)
-                .build());
+        BleManager.setBleParamsOptions(ConstValue.getBleOptions(this));
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -217,7 +203,6 @@ public class MainActivity extends ToolbarActivity
         mBluetoothUtils = new BluetoothUtils(this);
         mDeviceStore = new BluetoothLeDeviceStore();
         scanManager = BluetoothScanManager.getInstance(this);
-//        scanManager.addScanFilterCompats(new ScanFilterCompat.Builder().setDeviceName("").build());
         scanManager.setScanOverListener(new ScanOverListener() {
             @Override
             public void onScanOver() {
@@ -253,14 +238,16 @@ public class MainActivity extends ToolbarActivity
             @Override
             public void onScanResult(int callbackType, ScanResultCompat result) {
                 super.onScanResult(callbackType, result);
-                Logger.i("scan device "+result.getLeDevice().getAddress()+" "+result.getScanRecord().getDeviceName());
+                String deviceName = result.getScanRecord().getDeviceName();
+                Logger.i("scan device "+result.getLeDevice().getAddress()+" "+deviceName);
+                if (deviceName != null) deviceName = deviceName.toLowerCase();
                 if (filterSwitch) {
                     if (filterRssi <= result.getRssi()) {
                         if (filterName == null || filterName.equals("")) {
                             mDeviceStore.addDevice(result.getLeDevice());
-                        } else if (filterName.equals(result.getScanRecord().getDeviceName())) {
-                            mDeviceStore.addDevice(result.getLeDevice());
-                          saveFileLog(result.getDevice().getAddress(), result.getScanRecord().getBytes());
+                        } else if (filterName.toLowerCase().equals(deviceName)) {
+                          mDeviceStore.addDevice(result.getLeDevice());
+                          //saveFileLog(result.getDevice().getAddress(), result.getScanRecord().getBytes(), result.getLeDevice().getTimestamp());
                         }
                     }
                 } else {
@@ -271,21 +258,22 @@ public class MainActivity extends ToolbarActivity
         });
     }
 
-  private void saveFileLog(String mac, byte[] record){
-    if (record != null && record.length > 0 && record.length >30){
-      byte[] data = Arrays.copyOfRange(record, 9, 25);
-      String str = BluetoothDataParserUtils.toString(data);
-
-      if (mStringBuilder == null) mStringBuilder = new StringBuilder();
-      mStringBuilder.append(mac+" ");
-      mStringBuilder.append(str + "\r\n");
-      if (mStringBuilder.toString().length() >= 1024*10){
-        FileUtils.write(saveFile, mStringBuilder.toString(), true);
-          mStringBuilder.delete(0, mStringBuilder.length());
-        System.out.println("---save to file"+saveFile.getPath());
-      }
-    }
-  }
+  //private void saveFileLog(String mac, byte[] record, long time){
+  //  if (record != null && record.length > 0 && record.length >30){
+  //    byte[] data = Arrays.copyOfRange(record, 9, 25);
+  //    String str = BluetoothDataParserUtils.toString(data);
+  //
+  //    if (mStringBuilder == null) mStringBuilder = new StringBuilder();
+  //    mStringBuilder.append(android.text.format.DateFormat.format(
+  //        Constants.TIME_FORMAT, new java.util.Date(time)));
+  //    mStringBuilder.append(' '+mac+' ');
+  //    mStringBuilder.append(str + "\r\n");
+  //    if (mStringBuilder.toString().length() >= 1024){
+  //      FileUtils.write(saveFile, mStringBuilder.toString(), true);
+  //      mStringBuilder.delete(0, mStringBuilder.length());
+  //    }
+  //  }
+  //}
 
     public void startScan(){
         if (checkPermission()){

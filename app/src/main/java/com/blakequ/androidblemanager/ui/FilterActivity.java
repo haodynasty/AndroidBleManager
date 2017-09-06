@@ -8,13 +8,13 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
-
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import com.blakequ.androidblemanager.ConstValue;
 import com.blakequ.androidblemanager.R;
 import com.blakequ.androidblemanager.utils.Constants;
 import com.blakequ.androidblemanager.utils.PreferencesUtils;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
+import com.blakequ.bluetooth_manager_lib.BleManager;
 
 /**
  * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
@@ -45,6 +45,17 @@ public class FilterActivity extends ToolbarActivity {
     @Bind(R.id.diableFlag)
     protected ImageView mIvFlag;
     private int rssi;
+    private int scanPeriod;
+    private int pausePeriod;
+
+    @Bind(R.id.filter_tv_scan)
+    protected TextView mTvScan;
+    @Bind(R.id.filter_tv_pause)
+    protected TextView mTvPause;
+    @Bind(R.id.filter_et_scan_period)
+    protected SeekBar mSeekBarScan;
+    @Bind(R.id.filter_et_pause_period)
+    protected SeekBar mSeekBarPause;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +99,46 @@ public class FilterActivity extends ToolbarActivity {
 
             }
         });
+        scanPeriod = PreferencesUtils.getInt(this, Constants.SCAN_PERIOD, 10*1000)/1000;
+        pausePeriod = PreferencesUtils.getInt(this, Constants.PAUSE_PERIOD, 5*1000)/1000;
+        mTvScan.setText("Scan Period: " + String.valueOf(scanPeriod)+" seconds");
+        mTvPause.setText("Pause Period: " + String.valueOf(pausePeriod)+" seconds");
+        mSeekBarScan.setProgress(scanPeriod);
+        mSeekBarPause.setProgress(pausePeriod);
+        mSeekBarScan.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mTvScan.setText("Scan Period: " + String.valueOf(progress)+" seconds");
+                scanPeriod = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        mSeekBarPause.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mTvPause.setText("Pause Period: " + String.valueOf(progress)+" seconds");
+                pausePeriod = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
     private void setCheck(boolean isChecked){
@@ -106,6 +157,11 @@ public class FilterActivity extends ToolbarActivity {
         if (mSwitch.isChecked()){
             PreferencesUtils.putString(this, Constants.FILTER_NAME, mEtName.getText().toString().trim());
             PreferencesUtils.putInt(this, Constants.FILTER_RSSI, rssi);
+            if (scanPeriod == 0) scanPeriod = 1;
+            if (pausePeriod == 0) pausePeriod = 1;
+            PreferencesUtils.putInt(this, Constants.SCAN_PERIOD, scanPeriod*1000);
+            PreferencesUtils.putInt(this, Constants.PAUSE_PERIOD, pausePeriod*1000);
+            BleManager.setBleParamsOptions(ConstValue.getBleOptions(this));
         }
     }
 

@@ -9,4 +9,6 @@ public class Constants {
     public static final String FILTER_SWITCH = "switch";
     public static final String FILTER_NAME = "name";
     public static final String FILTER_RSSI = "rssi";
+    public static final String SCAN_PERIOD = "scan";
+    public static final String PAUSE_PERIOD = "pause";
 }

@@ -49,6 +49,8 @@ public class ScanFragment extends Fragment implements AdapterView.OnItemClickLis
     protected TextView mTvBluetoothStatus;
     @Bind(R.id.tvBluetoothFilter)
     protected TextView mTvBluetoothFilter;
+    @Bind(R.id.tvBluetoothPeriod)
+    protected TextView mTvBlePeriod;
     @Bind(R.id.tvItemCount)
     protected TextView mTvItemCount;
     @Bind(android.R.id.list)
@@ -101,6 +103,9 @@ public class ScanFragment extends Fragment implements AdapterView.OnItemClickLis
             }else {
                 mTvBluetoothFilter.setText("FilterRssi:"+filterRssi);
             }
+            int scanPeriod = PreferencesUtils.getInt(getContext(), Constants.SCAN_PERIOD, 10*1000);
+            int pausePeriod = PreferencesUtils.getInt(getContext(), Constants.PAUSE_PERIOD, 5*1000);
+            mTvBlePeriod.setText("scan:"+scanPeriod/1000+"s, pause:"+pausePeriod/1000+"s");
         }else {
             mTvBluetoothFilter.setText(R.string.off);
         }
