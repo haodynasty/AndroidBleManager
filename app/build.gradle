@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
 //集成fir.im发布
-apply plugin:'im.fir.plugin.gradle'
+//apply plugin:'im.fir.plugin.gradle'
 
-fir{
-    //必填 上传 fir.im apk 字段，否则无法上传 APP 到 fir.im
-    apiToken hasLocalProperty("FIR_TOKEN") ? getLocalProperty("FIR_TOKEN") : System.getenv("FIR_TOKEN")
-    //可选 上传fir.im 中显示的changelog
-    changeLog gitLogFirstCommit()//getLocalProperty("UPDATE_LOG")
-}
+//fir{
+//    //必填 上传 fir.im apk 字段，否则无法上传 APP 到 fir.im
+//    apiToken hasLocalProperty("FIR_TOKEN") ? getLocalProperty("FIR_TOKEN") : System.getenv("FIR_TOKEN")
+//    //可选 上传fir.im 中显示的changelog
+//    changeLog gitLogFirstCommit()//getLocalProperty("UPDATE_LOG")
+//}
 
 android {
     compileSdkVersion COMPILE_SDK_VERSION

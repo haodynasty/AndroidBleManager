@@ -66,9 +66,9 @@ buildscript {
         }
 
         //添加fir maven源
-        maven {
-            url "http://maven.bughd.com/public"
-        }
+//        maven {
+//            url "http://maven.bughd.com/public"
+//        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.3'
@@ -77,7 +77,7 @@ buildscript {
         // in the individual module build.gradle files
 
         //添加fir插件依赖
-        classpath 'im.fir:gradle-fir-publisher:1.0.7'
+//        classpath 'im.fir:gradle-fir-publisher:1.0.7'
 
         //using for upload to bintray lib
         File file = project.rootProject.file('local.properties')
