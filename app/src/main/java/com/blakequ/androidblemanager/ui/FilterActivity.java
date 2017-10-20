@@ -2,19 +2,24 @@ package com.blakequ.androidblemanager.ui;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import com.blakequ.androidblemanager.ConstValue;
 import com.blakequ.androidblemanager.R;
+import com.blakequ.androidblemanager.adapter.SpinnerAdapter;
+import com.blakequ.androidblemanager.event.UpdateEvent;
 import com.blakequ.androidblemanager.utils.Constants;
 import com.blakequ.androidblemanager.utils.PreferencesUtils;
 import com.blakequ.bluetooth_manager_lib.BleManager;
+import org.greenrobot.eventbus.EventBus;
 
 /**
  * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
@@ -47,6 +52,8 @@ public class FilterActivity extends ToolbarActivity {
     private int rssi;
     private int scanPeriod;
     private int pausePeriod;
+    private int scordKey;
+    private SpinnerAdapter adapter;
 
     @Bind(R.id.filter_tv_scan)
     protected TextView mTvScan;
@@ -56,6 +63,8 @@ public class FilterActivity extends ToolbarActivity {
     protected SeekBar mSeekBarScan;
     @Bind(R.id.filter_et_pause_period)
     protected SeekBar mSeekBarPause;
+    @Bind(R.id.filter_spinner)
+    protected Spinner mSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,6 +148,23 @@ public class FilterActivity extends ToolbarActivity {
 
             }
         });
+
+        scordKey = PreferencesUtils.getInt(this, Constants.SHOW_SPINNER, -1);
+        adapter = new SpinnerAdapter(this);
+        mSpinner.setAdapter(adapter);
+        mSpinner.setSelection(adapter.getPositionByValue(scordKey));
+        mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                SpinnerAdapter.Record record = (SpinnerAdapter.Record) adapter.getItem(i);
+                scordKey = record.id;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
     }
 
     private void setCheck(boolean isChecked){
@@ -162,6 +188,8 @@ public class FilterActivity extends ToolbarActivity {
             PreferencesUtils.putInt(this, Constants.SCAN_PERIOD, scanPeriod*1000);
             PreferencesUtils.putInt(this, Constants.PAUSE_PERIOD, pausePeriod*1000);
             BleManager.setBleParamsOptions(ConstValue.getBleOptions(this));
+            PreferencesUtils.putInt(getApplicationContext(), Constants.SHOW_SPINNER, scordKey);
+            EventBus.getDefault().post(new UpdateEvent(UpdateEvent.Type.CONFIG_CHANGE));
         }
     }
 

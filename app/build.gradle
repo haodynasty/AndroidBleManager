@@ -18,8 +18,8 @@ android {
         applicationId "com.blakequ.androidblemanager"
         minSdkVersion MIN_SDK_VERSION
         targetSdkVersion TARGET_SDK_VERSION
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
         buildConfigField "String", "FIR_TOKEN", hasLocalProperty("FIR_TOKEN_STRING") ? getLocalProperty("FIR_TOKEN_STRING") : System.getenv("FIR_TOKEN")
         buildConfigField "String", "FIR_ID", hasLocalProperty("FIR_ID_STRING") ? getLocalProperty("FIR_ID_STRING") : System.getenv("FIR_ID")
         //设置输出app默认前缀名称

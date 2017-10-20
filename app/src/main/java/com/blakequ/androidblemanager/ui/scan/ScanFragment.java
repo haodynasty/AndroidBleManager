@@ -124,6 +124,10 @@ public class ScanFragment extends Fragment implements AdapterView.OnItemClickLis
                     }
                 }
                 break;
+            case CONFIG_CHANGE:
+                int scrodKey = PreferencesUtils.getInt(getActivity(), Constants.SHOW_SPINNER, -1);
+                mLeDeviceListAdapter.updateConfig(scrodKey);
+                break;
         }
     }
 

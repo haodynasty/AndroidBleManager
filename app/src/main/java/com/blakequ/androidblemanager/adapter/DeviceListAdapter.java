@@ -7,10 +7,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.blakequ.androidblemanager.R;
 import com.blakequ.androidblemanager.utils.Constants;
+import com.blakequ.androidblemanager.utils.PreferencesUtils;
 import com.blakequ.bluetooth_manager_lib.device.BeaconType;
 import com.blakequ.bluetooth_manager_lib.device.BeaconUtils;
 import com.blakequ.bluetooth_manager_lib.device.BluetoothLeDevice;
+import com.blakequ.bluetooth_manager_lib.device.adrecord.AdRecord;
 import com.blakequ.bluetooth_manager_lib.device.ibeacon.IBeaconDevice;
+import com.blakequ.bluetooth_manager_lib.util.ByteUtils;
 
 /**
  * Copyright (C) BlakeQu All Rights Reserved <blakequ@gmail.com>
@@ -30,8 +33,14 @@ import com.blakequ.bluetooth_manager_lib.device.ibeacon.IBeaconDevice;
  */
 public class DeviceListAdapter extends BaseArrayListAdapter<BluetoothLeDevice>{
 
+    private int scrodKey;
     public DeviceListAdapter(Context context) {
         super(context);
+        scrodKey = PreferencesUtils.getInt(context, Constants.SHOW_SPINNER, -1);
+    }
+
+    public void updateConfig(int scrodKey){
+        this.scrodKey = scrodKey;
     }
 
     @Override
@@ -99,13 +108,17 @@ public class DeviceListAdapter extends BaseArrayListAdapter<BluetoothLeDevice>{
         viewHolder.deviceRssi.setText(rssiString + " / " + runningAverageRssiString);
 
         //add for test
-        //byte[] scan = device.getScanRecord();
-        //if (scan != null && scan.length > 0 && scan.length >30){
-        //    byte[] data = Arrays.copyOfRange(scan, 9, 25);
-        //    viewHolder.deviceRecord.setVisibility(View.VISIBLE);
-        //    String val = BluetoothDataParserUtils.toString(data) + " Distance:" + String.format("%.2f", calculateAccuracy(-59, device.getRssi()))+"m";
-        //    viewHolder.deviceRecord.setText(val);
-        //}
+        if (scrodKey != -1){
+            AdRecord record = device.getAdRecordStore().getRecord(scrodKey);
+            if (record != null) {
+                viewHolder.deviceRecord.setVisibility(View.VISIBLE);
+                viewHolder.deviceRecord.setText(record.getHumanReadableType()+"："+ByteUtils.byteArrayToHexString(record.getData()));
+            }else {
+                viewHolder.deviceRecord.setVisibility(View.GONE);
+            }
+        }else {
+            viewHolder.deviceRecord.setVisibility(View.GONE);
+        }
         return view;
     }
 

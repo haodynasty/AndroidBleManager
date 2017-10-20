@@ -79,6 +79,7 @@ public class UpdateEvent {
         SCAN_UPDATE,
         BLE_DATA,
         POP_SHOW,
-        TAB_SWITCH
+        TAB_SWITCH,
+        CONFIG_CHANGE
     }
 }
