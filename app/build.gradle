@@ -23,24 +23,29 @@ android {
         buildConfigField "String", "FIR_TOKEN", hasLocalProperty("FIR_TOKEN_STRING") ? getLocalProperty("FIR_TOKEN_STRING") : System.getenv("FIR_TOKEN")
         buildConfigField "String", "FIR_ID", hasLocalProperty("FIR_ID_STRING") ? getLocalProperty("FIR_ID_STRING") : System.getenv("FIR_ID")
         //设置输出app默认前缀名称
-        //project.ext.set("archivesBaseName", "BleManager_v" + versionName + "_"+today);
+//        project.ext.set("archivesBaseName", "BleManager_v" + versionName + "_"+today);
     }
 
     //签名配置
-//    signingConfigs {
-//        release {
-//            storeFile file('blakequ.jks')
-            //this is for gradle.properties
-//            storePassword project.hasProperty("KEYSTORE_PASS") ? KEYSTORE_PASS : System.getenv("KEYSTORE_PASS")
-//            keyAlias project.hasProperty("ALIAS_NAME") ? ALIAS_NAME : System.getenv("ALIAS_NAME")
-//            keyPassword project.hasProperty("ALIAS_PASS") ? ALIAS_PASS : System.getenv("ALIAS_PASS")
-
-            //this is for local.properties， using this
-//            storePassword getLocalProperty("KEYSTORE_PASS") ? getLocalProperty("KEYSTORE_PASS") : System.getenv("KEYSTORE_PASS")
-//            keyAlias getLocalProperty("ALIAS_NAME") ? getLocalProperty("ALIAS_NAME") : System.getenv("ALIAS_NAME")
-//            keyPassword getLocalProperty("ALIAS_PASS") ? getLocalProperty("ALIAS_PASS") : System.getenv("ALIAS_PASS")
-//        }
-//    }
+    signingConfigs {
+      def appStoreFile = System.getenv("STORE_SIGN_FILE")
+      def appStorePassword = System.getenv("STORE_SIGN_PWD")
+      def appKeyAlias = System.getenv("KEY_ALIAS")
+      def appKeyPassword = System.getenv("KEY_PASSWORD")
+      //当不能从环境变量里获取到签名信息的时候，就使用项目中带的debug签名
+      if(!appStoreFile||!appStorePassword||!appKeyAlias||!appKeyPassword){
+        appStoreFile = "debug.keystore"
+        appStorePassword = "android"
+        appKeyAlias = "androiddebugkey"
+        appKeyPassword = "android"
+      }
+      release {
+        storeFile file(appStoreFile)
+        storePassword appStorePassword
+        keyAlias appKeyAlias
+        keyPassword appKeyPassword
+      }
+    }
 
     buildTypes {
         debug {
@@ -51,17 +56,17 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-//            signingConfig signingConfigs.release
-//            //自定义apk安装包名
-//            applicationVariants.all { variant ->
-//                variant.mergedFlavor.versionCode = gitVersionCode()
-//                variant.mergedFlavor.versionName = gitVersionTag()
-//                variant.outputs.each { output ->
-//                    output.outputFile = new File(
-//                            output.outputFile.parent + "/${variant.buildType.name}",
-//                            "androidblemanager-${variant.buildType.name}-${variant.versionName}-${releaseTime()}.apk".toLowerCase())
-//                }
-//            }
+            signingConfig signingConfigs.release
+            //自定义apk安装包名
+            applicationVariants.all { variant ->
+                variant.mergedFlavor.versionCode = gitVersionCode()
+                variant.mergedFlavor.versionName = gitVersionTag()
+                variant.outputs.each { output ->
+                    output.outputFile = new File(
+                            output.outputFile.parent + "/${variant.buildType.name}",
+                            "androidblemanager-${variant.buildType.name}-${variant.versionName}-${releaseTime()}.apk".toLowerCase())
+                }
+            }
         }
     }
 

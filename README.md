@@ -54,7 +54,9 @@ maven
 <img src="screenshot/connect_one.png" width="32%" />
 <img src="screenshot/connect.png" width="32%" />
 <img src="screenshot/gatt.png" width="32%" />
-<img src="screenshot/connect_multi.png" width="32%" /></p>
+<img src="screenshot/connect_multi.png" width="32%" />
+<img src="screenshot/main.png" width="32%" />
+<img src="screenshot/filter.png" width="32%" /></p>
 
 # 3. 使用说明
 ## 3.1 扫描
@@ -333,6 +335,7 @@ if SDK >= 23, 增加权限
 - v2.1.2(2016/12/23): 新增重连策略，每次断开之后重连按照固定时间，如每次断开之后10s就启动重连；新增超时连接设置，当连接过程中超时会自动检测蓝牙状态，并可设置超时时间；修复多连接时调用startConnect()无法立即启动重连的问题
 - v2.1.3(2017/6/22): 修复无法立即停止扫描和设置扫描间隔无法立即生效的问题
 - 2017/9/6：删除fir，更新demo，增加扫描过滤，可以调整扫描周期间隔
+- 2017/10/21: Demo扫描设备列增加ScanRecord数据显示-在Filter中设置
 
 # 6. TODO
 
