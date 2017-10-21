@@ -55,7 +55,7 @@ maven
 <img src="screenshot/connect.png" width="32%" />
 <img src="screenshot/gatt.png" width="32%" />
 <img src="screenshot/connect_multi.png" width="32%" />
-<img src="screenshot/main.png" width="32%" />
+<img src="screenshot/main.jpg" width="32%" />
 <img src="screenshot/filter.png" width="32%" /></p>
 
 # 3. 使用说明
