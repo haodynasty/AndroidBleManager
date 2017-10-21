@@ -1,6 +1,6 @@
 *.iml
 .DS_Store
-*.keystore
+#*.keystore
 *.jks
 /captures
 
