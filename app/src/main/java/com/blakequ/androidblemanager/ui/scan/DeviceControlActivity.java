@@ -226,8 +226,11 @@ public class DeviceControlActivity extends ToolbarActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        connectManager.closeAll();
-//        connectManager.removeConnectStateListener(stateListener);
+        if (connectManager != null) {
+            Toast.makeText(DeviceControlActivity.this, "Disconnect with "+mDeviceAddress, Toast.LENGTH_LONG).show();
+            connectManager.disconnect(mDeviceAddress);
+            connectManager.removeConnectStateListener(stateListener);
+        }
     }
 
     @Override
