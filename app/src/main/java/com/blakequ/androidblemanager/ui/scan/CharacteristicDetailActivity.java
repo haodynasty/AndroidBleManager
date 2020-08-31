@@ -137,7 +137,7 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
             final String unknownCharaString = getResources().getString(R.string.unknown_characteristic);
             mTvCharName.setText(GattAttributeResolver.getAttributeName(uuid, unknownCharaString));
             mTvName.setText(mDevice.getAdRecordStore().getLocalNameComplete());
-            mTvCharUuid.setText("uuid: "+uuid.substring(4,8));
+            mTvCharUuid.setText("uuid: "+uuid);
             mTvProperties.setText(getPropertyString(characteristic.getProperties()));
             DescListAdapter mAdapter = new DescListAdapter(this);
             mTvDescriptorList.setAdapter(mAdapter);
@@ -293,9 +293,11 @@ public class CharacteristicDetailActivity extends ToolbarActivity implements Vie
             sb.append("Write ");
         }
         // 可通知，可指示
-        if ((property & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0
-                || (property & BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0) {
-            sb.append("Notity Indicate ");
+        if ((property & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
+            sb.append("Notity ");
+        }
+        if ((property & BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0) {
+            sb.append("ndicate ");
         }
         // 广播
         if ((property & BluetoothGattCharacteristic.PROPERTY_BROADCAST) > 0){

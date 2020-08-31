@@ -1,22 +1,23 @@
 package com.blakequ.androidblemanager.ui;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
+import androidx.annotation.NonNull;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.fragment.app.Fragment;
+import androidx.core.view.GravityCompat;
+import androidx.viewpager.widget.ViewPager;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -52,7 +53,6 @@ import com.blakequ.bluetooth_manager_lib.scan.BluetoothScanManager;
 import com.blakequ.bluetooth_manager_lib.scan.ScanOverListener;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanCallbackCompat;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanResultCompat;
-import com.orhanobut.logger.Logger;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +66,7 @@ import permissions.dispatcher.OnShowRationale;
 import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.PermissionUtils;
 import permissions.dispatcher.RuntimePermissions;
+import com.orhanobut.logger.Logger;
 
 @RuntimePermissions
 public class MainActivity extends ToolbarActivity
@@ -91,6 +92,7 @@ public class MainActivity extends ToolbarActivity
     private StringBuilder mStringBuilder;
     private File saveFile;
 
+    @SuppressLint("RestrictedApi")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -165,36 +167,36 @@ public class MainActivity extends ToolbarActivity
     }
 
     private void updateFirAppUpdate(){
-        new FirCheckUtils(this).startCheckVersion(BuildConfig.FIR_ID, BuildConfig.FIR_TOKEN, new FirCheckUtils.OnVersionDownloadListener() {
-            @Override
-            public void onNewVersionGet(final FirCheckUtils.FirVersionBean versionBean) {
-                if (versionBean != null && versionBean.isUpdate()) {
-                    AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
-                            .setPositiveButton(getString(R.string.confirm), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                    if (checkPermission()){
-                                        Intent intent = new Intent(getApplicationContext(), AppUpgradeService.class);
-                                        intent.putExtra(AppUpgradeService.EXTRA_DOWLOAD_URL, versionBean.getInstallUrl());
-                                        startService(intent);
-                                    }
-                                }
-                            })
-                            .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .setCancelable(true)
-                            .setTitle("软件更新")
-                            .setMessage("检测到测试版有更新:" + versionBean.getChangeLog() + "，是否立即更新？")
-                            .create();
-                    dialog.show();
-                }
-            }
-        });
+//        new FirCheckUtils(this).startCheckVersion(BuildConfig.FIR_ID, BuildConfig.FIR_TOKEN, new FirCheckUtils.OnVersionDownloadListener() {
+//            @Override
+//            public void onNewVersionGet(final FirCheckUtils.FirVersionBean versionBean) {
+//                if (versionBean != null && versionBean.isUpdate()) {
+//                    AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
+//                            .setPositiveButton(getString(R.string.confirm), new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface dialog, int which) {
+//                                    dialog.dismiss();
+//                                    if (checkPermission()){
+//                                        Intent intent = new Intent(getApplicationContext(), AppUpgradeService.class);
+//                                        intent.putExtra(AppUpgradeService.EXTRA_DOWLOAD_URL, versionBean.getInstallUrl());
+//                                        startService(intent);
+//                                    }
+//                                }
+//                            })
+//                            .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface dialog, int which) {
+//                                    dialog.dismiss();
+//                                }
+//                            })
+//                            .setCancelable(true)
+//                            .setTitle("软件更新")
+//                            .setMessage("检测到测试版有更新:" + versionBean.getChangeLog() + "，是否立即更新？")
+//                            .create();
+//                    dialog.show();
+//                }
+//            }
+//        });
     }
 
 
@@ -465,6 +467,7 @@ public class MainActivity extends ToolbarActivity
 
         }
 
+        @SuppressLint("RestrictedApi")
         @Override
         public void onPageSelected(int position) {
             currentTab = position;

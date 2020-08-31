@@ -3,8 +3,11 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AndroidBleManager.iml" filepath="$PROJECT_DIR$/AndroidBleManager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/AndroidBleManager-app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/AndroidBleManager-app.iml" group="AndroidBleManager/app" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/bluetooth-manager-lib/AndroidBleManager-bluetooth-manager-lib.iml" filepath="$PROJECT_DIR$/.idea/modules/bluetooth-manager-lib/AndroidBleManager-bluetooth-manager-lib.iml" group="AndroidBleManager/bluetooth-manager-lib" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/bluetooth-manager-lib/bluetooth-manager-lib.iml" filepath="$PROJECT_DIR$/bluetooth-manager-lib/bluetooth-manager-lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/workspace-AndroidBleManager.iml" filepath="$PROJECT_DIR$/.idea/modules/workspace-AndroidBleManager.iml" group="AndroidBleManager" />
     </modules>
   </component>
 </project>

@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'android-apt'
 //集成fir.im发布
 //apply plugin:'im.fir.plugin.gradle'
 
@@ -11,8 +10,7 @@ apply plugin: 'android-apt'
 //}
 
 android {
-    compileSdkVersion COMPILE_SDK_VERSION
-    buildToolsVersion BUILD_TOOLS_VERSION
+    compileSdkVersion 28
 
     defaultConfig {
         applicationId "com.blakequ.androidblemanager"
@@ -20,8 +18,6 @@ android {
         targetSdkVersion TARGET_SDK_VERSION
         versionCode 2
         versionName "1.1"
-        buildConfigField "String", "FIR_TOKEN", hasLocalProperty("FIR_TOKEN_STRING") ? getLocalProperty("FIR_TOKEN_STRING") : System.getenv("FIR_TOKEN")
-        buildConfigField "String", "FIR_ID", hasLocalProperty("FIR_ID_STRING") ? getLocalProperty("FIR_ID_STRING") : System.getenv("FIR_ID")
         //设置输出app默认前缀名称
 //        project.ext.set("archivesBaseName", "BleManager_v" + versionName + "_"+today);
     }
@@ -59,12 +55,11 @@ android {
             signingConfig signingConfigs.release
             //自定义apk安装包名
             applicationVariants.all { variant ->
-                variant.mergedFlavor.versionCode = gitVersionCode()
-                variant.mergedFlavor.versionName = gitVersionTag()
-                variant.outputs.each { output ->
-                    output.outputFile = new File(
-                            output.outputFile.parent + "/${variant.buildType.name}",
-                            "androidblemanager-${variant.buildType.name}-${variant.versionName}-${releaseTime()}.apk".toLowerCase())
+                variant.outputs.all { output ->
+                    if (variant.buildType.name == 'release') {
+                        def fileName = "ble-${gitVersionTag()}-${gitVersionCode()}-${releaseTime()}-${variant.buildType.name}.apk".toLowerCase()
+                        outputFileName = fileName
+                    }
                 }
             }
         }
@@ -79,15 +74,16 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-    compile "com.android.support:appcompat-v7:$SUPPORT_LIBRARY_VERSION"
-    compile "com.android.support:design:$SUPPORT_LIBRARY_VERSION"
-    compile 'com.jakewharton:butterknife:7.0.1'
-    compile 'org.greenrobot:eventbus:3.0.0'
-    compile 'com.github.hotchemi:permissionsdispatcher:2.1.3'
-    apt 'com.github.hotchemi:permissionsdispatcher-processor:2.1.3'
-
-    compile project(':bluetooth-manager-lib')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    testImplementation 'junit:junit:4.12'
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.jakewharton:butterknife:7.0.1'
+    annotationProcessor 'com.jakewharton:butterknife:7.0.1'
+    implementation 'org.greenrobot:eventbus:3.0.0'
+    implementation 'com.github.hotchemi:permissionsdispatcher:2.1.3'
+    annotationProcessor  'com.github.hotchemi:permissionsdispatcher-processor:2.1.3'
+    implementation 'com.blakequ.logger:logger:1.0.1'
+    implementation project(':bluetooth-manager-lib')
 //    compile 'com.blakequ.androidblemanager:bluetooth-manager-lib:latest.integration'
 }

@@ -293,7 +293,7 @@ public class DeviceControlActivity extends ToolbarActivity {
             final Map<String, String> currentServiceData = new HashMap<>();
             uuid = gattService.getUuid().toString();
             currentServiceData.put(LIST_NAME, GattAttributeResolver.getAttributeName(uuid, unknownServiceString));
-            currentServiceData.put(LIST_UUID, uuid.substring(4,8));
+            currentServiceData.put(LIST_UUID, uuid);
             System.out.println("---service name:"+currentServiceData.get(LIST_NAME));
             System.out.println("---service uuid:" + uuid);
             gattServiceData.add(currentServiceData);
@@ -309,7 +309,7 @@ public class DeviceControlActivity extends ToolbarActivity {
                 uuid = gattCharacteristic.getUuid().toString();
                 String property = getPropertyString(gattCharacteristic.getProperties());
                 currentCharaData.put(LIST_NAME, GattAttributeResolver.getAttributeName(uuid, unknownCharaString));
-                currentCharaData.put(LIST_UUID, uuid.substring(4,8)+" "+property);
+                currentCharaData.put(LIST_UUID, uuid+" \n"+property);
                 System.out.println("-----char name:" + currentCharaData.get(LIST_NAME));
                 System.out.println("-----chat uuid:"+ uuid);
                 gattCharacteristicGroupData.add(currentCharaData);
@@ -356,10 +356,14 @@ public class DeviceControlActivity extends ToolbarActivity {
             sb.append("Write ");
         }
         //Notify
-        if ((property & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0
-                || (property & BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0) {
-            sb.append("Notity Indicate ");
+        if ((property & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
+            sb.append("Notity ");
         }
+
+        if ((property & BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0){
+            sb.append("Indicate ");
+        }
+
         //Broadcast
         if ((property & BluetoothGattCharacteristic.PROPERTY_BROADCAST) > 0){
             sb.append("Broadcast ");

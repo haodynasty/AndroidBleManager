@@ -1,7 +1,7 @@
 package com.blakequ.bluetooth_manager_lib;
 
 
-import android.support.annotation.IntRange;
+import androidx.annotation.IntRange;
 
 import com.blakequ.bluetooth_manager_lib.connect.ConnectConfig;
 

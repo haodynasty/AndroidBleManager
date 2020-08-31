@@ -372,6 +372,7 @@ ConnectConfig.updateReconnectSpaceTime(4000); //间隔重连时间
 
 # 9. Apk
 - [demo address](http://d.firim.vip/pxfn)
+- <p><img src="screenshot/ecode.png" width="32%" />
 
 
 [bintray_svg]: https://api.bintray.com/packages/haodynasty/maven/AndroidBleManager/images/download.svg

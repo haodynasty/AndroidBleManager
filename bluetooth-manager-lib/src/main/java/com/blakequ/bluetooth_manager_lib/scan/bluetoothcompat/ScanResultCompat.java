@@ -23,7 +23,7 @@ import android.bluetooth.le.ScanResult;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.blakequ.bluetooth_manager_lib.device.BluetoothLeDevice;
 

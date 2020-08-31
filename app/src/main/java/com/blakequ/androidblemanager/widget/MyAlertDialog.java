@@ -2,9 +2,9 @@ package com.blakequ.androidblemanager.widget;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
-import android.support.v7.app.AlertDialog;
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
 import android.view.View;
 
 import com.blakequ.androidblemanager.R;

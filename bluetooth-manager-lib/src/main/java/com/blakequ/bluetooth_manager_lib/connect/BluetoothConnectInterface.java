@@ -328,7 +328,14 @@ public abstract class BluetoothConnectInterface {
                                 mBluetoothGatt.setCharacteristicNotification(characteristic, true);
                                 BluetoothGattDescriptor descriptor3 = characteristic.getDescriptor(data.getDescriptorUUID());
                                 if (descriptor3 != null){
-                                    descriptor3.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                                    if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0){
+                                        descriptor3.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                                    }else if((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0){
+                                        //两个都是通知的意思，notify和indication的区别在于，notify只是将你要发的数据发送给手机，没有确认机制，
+                                        //不会保证数据发送是否到达。而indication的方式在手机收到数据时会主动回一个ack回来。即有确认机制，只有收
+                                        //到这个ack你才能继续发送下一个数据。这保证了数据的正确到达，也起到了流控的作用。所以在打开通知的时候，需要设置一下。
+                                        descriptor3.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
+                                    }
                                     mOpratorQueue.addOperator(descriptor3, true);
                                 }else {
                                     Logger.e("Fail to get notify descriptor uuid:"+data.getDescriptorUUID());

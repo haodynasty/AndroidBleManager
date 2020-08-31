@@ -1,7 +1,7 @@
 package com.blakequ.androidblemanager.adapter;
 
 import android.app.Activity;
-import android.support.v4.widget.SimpleCursorAdapter;
+import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;

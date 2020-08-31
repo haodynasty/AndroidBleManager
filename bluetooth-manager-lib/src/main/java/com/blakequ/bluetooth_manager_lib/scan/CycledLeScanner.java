@@ -8,7 +8,7 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.BluetoothLeScannerCompat;
 import com.blakequ.bluetooth_manager_lib.scan.bluetoothcompat.ScanCallbackCompat;
