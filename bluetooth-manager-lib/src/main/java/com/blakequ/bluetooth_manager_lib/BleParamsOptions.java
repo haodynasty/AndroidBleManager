@@ -38,7 +38,7 @@ public class BleParamsOptions {
     private final long backgroundBetweenScanPeriod;
 
     //using for connect
-    private final int maxConnectDeviceNum;//一次最大连接设备个数
+    private final int maxConnectDeviceNum; //一次最大连接设备个数
     private final int reconnectStrategy; //重连策略
     private final int reconnectMaxTimes; //最大重连次数
     private final long reconnectBaseSpaceTime; //重连基础时间间隔ms

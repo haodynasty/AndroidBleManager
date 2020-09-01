@@ -65,11 +65,6 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
-
-        //添加fir maven源
-//        maven {
-//            url "http://maven.bughd.com/public"
-//        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.0.1'
